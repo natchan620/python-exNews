@@ -1,12 +1,18 @@
 from bs4 import BeautifulSoup
 import requests
-import pandas as pd 
+import re
 
-url = "https://www.akc.org/reg/dogreg_stats.cfm"
+url = "http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM"
 r = requests.get(url)
 data = r.text
 soup = BeautifulSoup(data)
 
+rows = soup.find_all('tr', {'class': re.compile('row*')})
+
+for row in rows:
+        print(row.get_text())
+        
+        
 table = soup.find_all('table')[1]
 rows = table.find_all('tr')[2:]
 
