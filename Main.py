@@ -26,8 +26,9 @@ for row in rows:
     data['time'].append( cols[0].get_text() )
     data['stockcode'].append( cols[1].get_text() )
     data['stockname'].append( cols[2].get_text() )
-    data['rank2008'].append( cols[3].get_text() )
-    data['rank2003'].append( cols[4].get_text() )
+    data['headline'].append( cols[3].contents[0].contents.get_text() )
+    data['document'].append( cols[3].contents[1].contents.get_text() )
+    data['docurl'].append( cols[3].contents[1].attrs["href"] )
 
 newsData = pd.DataFrame( data )
 newsData.to_csv("exNews.csv")
