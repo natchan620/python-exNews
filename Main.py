@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import re
+import pandas as pd
 
 url = "http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM"
 r = requests.get(url)
@@ -26,8 +27,8 @@ for row in rows:
     data['time'].append( cols[0].get_text() )
     data['stockcode'].append( cols[1].get_text() )
     data['stockname'].append( cols[2].get_text() )
-    data['headline'].append( cols[3].contents[0].contents.get_text() )
-    data['document'].append( cols[3].contents[1].contents.get_text() )
+    data['headline'].append( cols[3].contents[0].contents[0] )
+    data['document'].append( cols[3].contents[1].contents[0] )
     data['docurl'].append( cols[3].contents[1].attrs["href"] )
 
 newsData = pd.DataFrame( data )
