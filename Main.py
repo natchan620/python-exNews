@@ -13,7 +13,7 @@ data = {
     'document' : [],
     'docurl' : []
 }
-lastDocID = 2739765
+lastDocID = 0
 
 urls = ['http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM','http://www.hkexnews.hk/listedco/listconews/mainindex/sehk_listedco_datetime_today_c.htm','http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today.htm','http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today_c.htm']
 
@@ -57,7 +57,9 @@ newsData = newsData[['docID', 'time', 'stockcode', 'stockname', 'headline', 'doc
 #sortdata
 newsData = newsData.sort_values(['docID'], ascending=True)
 newsDataSorted = newsData[(newsData["docID"] > lastDocID) & (newsData["stockcode"].isin(stocklist))]
-newsDataSorted.to_csv("exNews_"+currTime+".csv")
+for index, row in newsDataSorted.iterrows():
+	print(row['time'], row['stockcode'], row['stockname'], row['headline'], row['document'], row['docurl'])
+#newsDataSorted.to_csv("exNews_"+currTime+".csv")
 
 #update next minID to list
 newsData = newsData.sort_values(['docID'], ascending=False)
