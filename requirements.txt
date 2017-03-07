@@ -2,3 +2,4 @@ python-telegram-bot
 beautifulsoup4
 requests
 pandas
+lxml
