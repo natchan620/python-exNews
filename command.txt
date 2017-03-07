@@ -1,0 +1,3 @@
+cd exnews
+docker build -t telegram-exNews .
+docker run -it telegram-exNews
