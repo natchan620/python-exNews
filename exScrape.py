@@ -1,10 +1,11 @@
+#coding:utf-8
 from bs4 import BeautifulSoup, Comment
 import logging
 import requests
 import re
 import pandas as pd
 
-def exScrape():
+def exScrape(lastDocID):
 #initialise
 	data = {
 		'docID' : [],
@@ -15,12 +16,12 @@ def exScrape():
 	    'document' : [],
 	    'docurl' : []
 	}
-	lastDocID = 0
+	#lastDocID = 0
 
 	messagelist = []
 
-	#urls = ['http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM','http://www.hkexnews.hk/listedco/listconews/mainindex/sehk_listedco_datetime_today_c.htm','http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today.htm','http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today_c.htm']
-	urls = ['http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM','http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today.htm']
+	urls = ['http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM','http://www.hkexnews.hk/listedco/listconews/mainindex/sehk_listedco_datetime_today_c.htm','http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today.htm','http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today_c.htm']
+	#urls = ['http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM','http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today.htm']
 
 	with open('stocklist.txt') as f:
 	    rawstocklist = f.read().splitlines()
@@ -30,9 +31,10 @@ def exScrape():
 	#load html
 	for url in urls:
 		r = requests.get(url)
+		r.encoding='utf-8'
+
 		html = r.text
 		soup = BeautifulSoup(html, "lxml")
-
 
 		currTime = re.search(r'Current Date Time: ([0-9]*)', html).group(1)
 		print("Last update: "+currTime)

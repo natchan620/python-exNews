@@ -1,18 +1,25 @@
+#coding:utf-8
 from telegram.ext import Updater, CommandHandler, Job
 import exScrape
 import logging
 import configparser
 
 #telegram
-def start(bot, update):
-	msgList = exScrape.exScrape()
-	for message in msgList:
-		update.message.reply_text(message)
+def start(bot, update, args):
+	try:
+		docID = int(args[0])
+		msgList = exScrape.exScrape(docID)
+		for message in msgList:
+			update.message.reply_text(message)
+	except (IndexError, ValueError):
+		update.message.reply_text('Usage: /start <docID>')
+
 
 def alarm(bot, job):
 	msgList = exScrape.exScrape()
 	for message in msgList:
 		bot.sendMessage(job.context, text=message)
+
 
 def set(bot, update, args, job_queue, chat_data):
     """Adds a job to the queue"""
@@ -66,7 +73,7 @@ def main():
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
-    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("start", start, pass_args=True))
     dp.add_handler(CommandHandler("help", start))
     dp.add_handler(CommandHandler("set", set,
                                   pass_args=True,
@@ -85,6 +92,7 @@ def main():
     # non-blocking and will stop the bot gracefully.
     updater.idle()
 
+
 def ConfigSectionMap(section):
     dict1 = {}
     options = Config.options(section)
@@ -97,6 +105,7 @@ def ConfigSectionMap(section):
             print("exception on %s!" % option)
             dict1[option] = None
     return dict1
+
 
 if __name__ == '__main__':
     main()
