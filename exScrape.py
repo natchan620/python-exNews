@@ -3,9 +3,9 @@ from bs4 import BeautifulSoup, Comment
 import requests
 import re
 import pandas as pd
+from pathlib import Path
 
-
-def exScrape(lastDocID):
+def exScrape(teamID, chatID):
     # initialise
     data = {
         'docID' : [],
@@ -16,9 +16,16 @@ def exScrape(lastDocID):
         'document' : [],
         'docurl' : []
     }
-    # lastDocID = 0
+
+    # load last DocID
+    lastDocID = 0
+    my_file = Path("session/" + str(chatID))
+    if my_file.is_file():
+        with open("session/" + str(chatID)) as f:
+            lastDocID = int(f.read())
 
     messagelist = []
+    messagelist.append("Updated from: " + str(lastDocID))
 
     urls = [
     'http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM',
@@ -31,6 +38,7 @@ def exScrape(lastDocID):
     stocklist = []
     for stock in rawstocklist:
         stocklist.append(stock.zfill(5))
+        
     # load html
     for url in urls:
         r = requests.get(url)
@@ -62,18 +70,28 @@ def exScrape(lastDocID):
     newsData = pd.DataFrame(data)
     newsData = newsData[['docID', 'time', 'stockcode', 'stockname', 'headline', 'document', 'docurl']]
 
-    # sortdata
+
+    # duplicate row if more than one code
+   # newsDataDuplicate = newsData[newsData["stockcode"] .str.len() > 5]
+   # for index, row in newsDataDuplicate.iterrows():
+   #     stockcodes = re.findall('.....', row['stockcode'])
+   #     for stockno in stockcodes:
+   #         print(stockno)
+   #         newsDataToadd = pd.DataFrame([row['docID'], row['time'], stockno, row['stockname'], row['headline'], row['document']], columns = ['docID', 'time', 'stockcode', 'stockname', 'headline', 'document', 'docurl'])
+   #         newsData = newsData.concat(newsData, newsDataToadd)
+
+    # sortdata and match to team
     newsData = newsData.sort_values(['docID'], ascending=True)
     newsDataSorted = newsData[(newsData["docID"] > lastDocID) & (newsData["stockcode"].isin(stocklist))]
     for index, row in newsDataSorted.iterrows():
         messagelist.append(str(row['docID'])+" "+row['time']+"\n"+row['stockcode']+" "+row['stockname']+"\n"+row['headline']+"\n"+row['document']+"\n"+row['docurl'])
-    # bot.sendMessage(job.context, text=row['time']+row['stockcode']+row['stockname']+row['headline']+row['document']+row['docurl'])
-    # newsDataSorted.to_csv("exNews_"+currTime+".csv")
 
-    # update next minID to list
+    # update next minID to list & save session
     lastDocID = newsData['docID'].iloc[-1]
     lastDocTime = newsData['time'].iloc[-1]
-    messagelist.append("Updated to: " + str(lastDocID) + " " + lastDocTime)
-    # bot.sendMessage(job.context, text=str(lastDocID))
+    messagelist.append("Updated to: " + str(lastDocID) + " "  + str(lastDocTime))
+    wr = open("session/" + str(chatID), "w+")
+    wr.write(str(lastDocID))
+    # newsData.to_csv("exNews_" + str(lastDocID) + ".csv")
 
     return messagelist

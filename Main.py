@@ -7,12 +7,13 @@ import configparser
 #telegram
 def start(bot, update, args):
     try:
+
         docID = int(args[0])
-        msgList = exScrape.exScrape(docID)
+        msgList = exScrape.exScrape(docID, update.message.chat_id)
         for message in msgList:
             update.message.reply_text(message)
     except (IndexError, ValueError):
-        update.message.reply_text('Usage: /start <docID>')
+        update.message.reply_text('Usage: /start <teamID>')
 
 
 def alarm(bot, job):
@@ -39,7 +40,7 @@ def set(bot, update, args, job_queue, chat_data):
         update.message.reply_text('Timer successfully set!')
 
     except (IndexError, ValueError):
-        update.message.reply_text('Usage: /set <seconds>')
+        update.message.reply_text('Usage: /set <seconds> <teamID>')
 
 
 def unset(bot, update, chat_data):
