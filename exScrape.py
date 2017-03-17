@@ -20,7 +20,11 @@ def exScrape(lastDocID):
 
 	messagelist = []
 
-	urls = ['http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM','http://www.hkexnews.hk/listedco/listconews/mainindex/sehk_listedco_datetime_today_c.htm','http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today.htm','http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today_c.htm']
+	urls = [
+	'http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM',
+	'http://www.hkexnews.hk/listedco/listconews/mainindex/sehk_listedco_datetime_today_c.htm',
+	'http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today.htm',
+	'http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today_c.htm']
 	#urls = ['http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM','http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today.htm']
 
 	with open('stocklist.txt') as f:
@@ -48,14 +52,13 @@ def exScrape(lastDocID):
 		  	data['docID'].append( int(e) )
 
 		for row in rows:
-		    cols = row.find_all('td')
-		    data['time'].append( cols[0].get_text() )
-		    data['stockcode'].append( cols[1].get_text() )	
-		    data['stockname'].append( cols[2].get_text() )
-		    data['headline'].append( cols[3].contents[0].contents[0] )
-		    data['document'].append( cols[3].contents[1].contents[0] )
-		    data['docurl'].append( "http://www.hkexnews.hk"+cols[3].contents[1].attrs["href"] )
-
+			cols = row.find_all('td')
+			data['time'].append( cols[0].get_text() )
+			data['stockcode'].append( cols[1].get_text() )	
+			data['stockname'].append( cols[2].get_text() )
+			data['headline'].append( cols[3].contents[0].contents[0] )
+			data['document'].append( cols[3].contents[1].contents[0] )
+			data['docurl'].append( "http://www.hkexnews.hk"+cols[3].contents[1].attrs["href"] )
 
 	newsData = pd.DataFrame( data )
 	newsData = newsData[['docID', 'time', 'stockcode', 'stockname', 'headline', 'document', 'docurl']]
