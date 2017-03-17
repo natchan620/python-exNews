@@ -1,80 +1,79 @@
-#coding:utf-8
+# coding:utf-8
 from bs4 import BeautifulSoup, Comment
-import logging
 import requests
 import re
 import pandas as pd
 
+
 def exScrape(lastDocID):
-#initialise
-	data = {
-		'docID' : [],
-	    'time' : [],
-	    'stockcode' : [],
-	    'stockname' : [],
-	    'headline' : [],
-	    'document' : [],
-	    'docurl' : []
-	}
-	#lastDocID = 0
+    # initialise
+    data = {
+        'docID' : [],
+        'time' : [],
+        'stockcode' : [],
+        'stockname' : [],
+        'headline' : [],
+        'document' : [],
+        'docurl' : []
+    }
+    # lastDocID = 0
 
-	messagelist = []
+    messagelist = []
 
-	urls = [
-	'http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM',
-	'http://www.hkexnews.hk/listedco/listconews/mainindex/sehk_listedco_datetime_today_c.htm',
-	'http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today.htm',
-	'http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today_c.htm']
-	#urls = ['http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM','http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today.htm']
+    urls = [
+    'http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM',
+    'http://www.hkexnews.hk/listedco/listconews/mainindex/sehk_listedco_datetime_today_c.htm',
+    'http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today.htm',
+    'http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today_c.htm']
 
-	with open('stocklist.txt') as f:
-	    rawstocklist = f.read().splitlines()
-	stocklist = []
-	for stock in rawstocklist:
-		stocklist.append(stock.zfill(5))
-	#load html
-	for url in urls:
-		r = requests.get(url)
-		r.encoding='utf-8'
+    with open('stocklist.txt') as f:
+        rawstocklist = f.read().splitlines()
+    stocklist = []
+    for stock in rawstocklist:
+        stocklist.append(stock.zfill(5))
+    # load html
+    for url in urls:
+        r = requests.get(url)
+        r.encoding = 'utf-8'
 
-		html = r.text
-		soup = BeautifulSoup(html, "lxml")
+        html = r.text
+        soup = BeautifulSoup(html, "lxml")
 
-		currTime = re.search(r'Current Date Time: ([0-9]*)', html).group(1)
-		print("Last update: "+currTime)
+        currTime = re.search(r'Current Date Time: ([0-9]*)', html).group(1)
+        print("Last update: " + currTime)
 
-		comments = soup.find_all(text=lambda text:isinstance(text, Comment))
-		rows = soup.find_all('tr', {'class': re.compile('row*')})
+        comments = soup.find_all(text=lambda text: isinstance(text, Comment))
+        rows = soup.find_all('tr', {'class': re.compile('row*')})
 
-		for comment in comments:
-		  e = re.match(r'([0-9]*)', comment.string).group(1)
-		  if len(e) > 1:
-		  	data['docID'].append( int(e) )
+        for comment in comments:
+            e = re.match(r'([0-9]*)', comment.string).group(1)
+            if len(e) > 1:
+                data['docID'].append(int(e))
 
-		for row in rows:
-			cols = row.find_all('td')
-			data['time'].append( cols[0].get_text() )
-			data['stockcode'].append( cols[1].get_text() )	
-			data['stockname'].append( cols[2].get_text() )
-			data['headline'].append( cols[3].contents[0].contents[0] )
-			data['document'].append( cols[3].contents[1].contents[0] )
-			data['docurl'].append( "http://www.hkexnews.hk"+cols[3].contents[1].attrs["href"] )
+        for row in rows:
+            cols = row.find_all('td')
+            data['time'].append(cols[0].get_text())
+            data['stockcode'].append(cols[1].get_text())
+            data['stockname'].append(cols[2].get_text())
+            data['headline'].append(cols[3].contents[0].contents[0])
+            data['document'].append(cols[3].contents[1].contents[0])
+            data['docurl'].append("http://www.hkexnews.hk" + cols[3].contents[1].attrs["href"])
 
-	newsData = pd.DataFrame( data )
-	newsData = newsData[['docID', 'time', 'stockcode', 'stockname', 'headline', 'document', 'docurl']]
+    newsData = pd.DataFrame(data)
+    newsData = newsData[['docID', 'time', 'stockcode', 'stockname', 'headline', 'document', 'docurl']]
 
-	#sortdata
-	newsData = newsData.sort_values(['docID'], ascending=True)
-	newsDataSorted = newsData[(newsData["docID"] > lastDocID) & (newsData["stockcode"].isin(stocklist))]
-	for index, row in newsDataSorted.iterrows():
-		messagelist.append(str(row['docID'])+" "+row['time']+"\n"+row['stockcode']+" "+row['stockname']+"\n"+row['headline']+"\n"+row['document']+"\n"+row['docurl'])
-	#bot.sendMessage(job.context, text=row['time']+row['stockcode']+row['stockname']+row['headline']+row['document']+row['docurl'])
-	#newsDataSorted.to_csv("exNews_"+currTime+".csv")
+    # sortdata
+    newsData = newsData.sort_values(['docID'], ascending=True)
+    newsDataSorted = newsData[(newsData["docID"] > lastDocID) & (newsData["stockcode"].isin(stocklist))]
+    for index, row in newsDataSorted.iterrows():
+        messagelist.append(str(row['docID'])+" "+row['time']+"\n"+row['stockcode']+" "+row['stockname']+"\n"+row['headline']+"\n"+row['document']+"\n"+row['docurl'])
+    # bot.sendMessage(job.context, text=row['time']+row['stockcode']+row['stockname']+row['headline']+row['document']+row['docurl'])
+    # newsDataSorted.to_csv("exNews_"+currTime+".csv")
 
-	#update next minID to list
-	lastDocID = newsData['docID'].iloc[-1]
-	lastDocTime = newsData['time'].iloc[-1]
-	messagelist.append("Updated to: "+str(lastDocID)+" "+lastDocTime)
-	#bot.sendMessage(job.context, text=str(lastDocID))
+    # update next minID to list
+    lastDocID = newsData['docID'].iloc[-1]
+    lastDocTime = newsData['time'].iloc[-1]
+    messagelist.append("Updated to: " + str(lastDocID) + " " + lastDocTime)
+    # bot.sendMessage(job.context, text=str(lastDocID))
 
-	return messagelist
+    return messagelist

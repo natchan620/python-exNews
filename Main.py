@@ -6,19 +6,19 @@ import configparser
 
 #telegram
 def start(bot, update, args):
-	try:
-		docID = int(args[0])
-		msgList = exScrape.exScrape(docID)
-		for message in msgList:
-			update.message.reply_text(message)
-	except (IndexError, ValueError):
-		update.message.reply_text('Usage: /start <docID>')
+    try:
+        docID = int(args[0])
+        msgList = exScrape.exScrape(docID)
+        for message in msgList:
+            update.message.reply_text(message)
+    except (IndexError, ValueError):
+        update.message.reply_text('Usage: /start <docID>')
 
 
 def alarm(bot, job):
-	msgList = exScrape.exScrape()
-	for message in msgList:
-		bot.sendMessage(job.context, text=message)
+    msgList = exScrape.exScrape()
+    for message in msgList:
+        bot.sendMessage(job.context, text=message)
 
 
 def set(bot, update, args, job_queue, chat_data):
