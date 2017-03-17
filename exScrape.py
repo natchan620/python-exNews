@@ -33,12 +33,14 @@ def exScrape(teamID, chatID):
     'http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today.htm',
     'http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today_c.htm']
 
-    with open('stocklist.txt') as f:
-        rawstocklist = f.read().splitlines()
+    # load stocklist
+    df = pd.read_excel(open('listingone.xls','rb'), sheetname=0)
+    df.columns = ['code', 'EName', 'CName', 'team', 'x', 'y', 'z']
+    df = df[(df['team'] == int(teamID))]
     stocklist = []
-    for stock in rawstocklist:
-        stocklist.append(stock.zfill(5))
-        
+    for index, row in df.iterrows():
+        stocklist.append(str(row['code']).zfill(5))
+
     # load html
     for url in urls:
         r = requests.get(url)

@@ -7,9 +7,8 @@ import configparser
 #telegram
 def start(bot, update, args):
     try:
-
-        docID = int(args[0])
-        msgList = exScrape.exScrape(docID, update.message.chat_id)
+        teamID = int(args[0])
+        msgList = exScrape.exScrape(teamID, update.message.chat_id)
         for message in msgList:
             update.message.reply_text(message)
     except (IndexError, ValueError):
