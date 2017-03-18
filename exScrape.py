@@ -89,7 +89,7 @@ def exScrape(teamID, chatID, slientMode):
         newsData = newsData.sort_values(['docID'], ascending=True)
         newsDataSorted = newsData[(newsData["docID"] > lastDocID) & (newsData["stockcode"].isin(stocklist))]
         for index, row in newsDataSorted.iterrows():
-            messagelist.append(str(row['docID'])+" "+row['time']+"\n"+row['stockcode']+" "+row['stockname']+"\n"+row['headline']+"\n"+row['document']+"\n"+row['docurl'])
+            messagelist.append(str(row['docID']) + " " + row['time'] + "\n<b>" + row['stockcode'] + " " + row['stockname'] + "</b>\n<i>" + row['headline'] + "</i>\n<a href=\"" + row['docurl'] + "\">" + row['document'] + "</a>")
 
         # update next minID to list & save session
         lastDocID = newsData['docID'].iloc[-1]
