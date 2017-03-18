@@ -8,7 +8,10 @@ import configparser
 def start(bot, update, args):
     try:
         teamID = int(args[0])
-        msgList = exScrape.exScrape(teamID, update.message.chat_id)
+        if teamid < 1 | teamid > 27:
+            update.message.reply_text('Please check your teamID')
+            return
+        msgList = exScrape.exScrape(teamID, update.message.chat_id, False)
         for message in msgList:
             update.message.reply_text(message)
     except (IndexError, ValueError):
@@ -16,9 +19,9 @@ def start(bot, update, args):
 
 
 def alarm(bot, job):
-    msgList = exScrape.exScrape()
+    msgList = exScrape.exScrape(job.context[1], job.context[0], True)
     for message in msgList:
-        bot.sendMessage(job.context, text=message)
+        bot.sendMessage(job.context[0], text=message)
 
 
 def set(bot, update, args, job_queue, chat_data):
@@ -26,20 +29,24 @@ def set(bot, update, args, job_queue, chat_data):
     chat_id = update.message.chat_id
     try:
         # args[0] should contain the time for the timer in seconds
-        due = int(args[0])
+        due = int(args[0]) * 60
+        teamid = int(args[1])
         if due < 0:
             update.message.reply_text('Sorry we can not go back to future!')
             return
+        if teamid < 1 | teamid > 27:
+            update.message.reply_text('Please check your teamID')
+            return
 
         # Add job to queue
-        job = Job(alarm, due, repeat=False, context=chat_id)
+        job = Job(alarm, due, repeat=True, context=[chat_id, teamid])
         chat_data['job'] = job
         job_queue.put(job)
 
         update.message.reply_text('Timer successfully set!')
 
     except (IndexError, ValueError):
-        update.message.reply_text('Usage: /set <seconds> <teamID>')
+        update.message.reply_text('Usage: /set <minutes> <teamID>')
 
 
 def unset(bot, update, chat_data):
@@ -61,12 +68,12 @@ def error(bot, update, error):
 
 
 def main():
-    #read config
+    # read config
     Config = configparser.ConfigParser()
     Config.read("config.ini")
 
     # Enable logging
-    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(filename='logfile.log',format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
 
     updater = Updater(Config.get('Telegram', 'token'))
