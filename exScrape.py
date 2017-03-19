@@ -12,7 +12,7 @@ def exScrape(teamID, chatID, slientMode):
     logging.basicConfig(filename='logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
 
-    # initialise	
+    # initialise    
     data = {
         'docID': [],
         'time': [],
@@ -80,21 +80,24 @@ def exScrape(teamID, chatID, slientMode):
         newsData = pd.DataFrame(data)
         newsData = newsData[['docID', 'time', 'stockcode', 'stockname', 'headline', 'document', 'docurl']]
 
-
         # duplicate row if more than one code
-        # newsDataDuplicate = newsData[newsData["stockcode"] .str.len() > 5]
-        # for index, row in newsDataDuplicate.iterrows():
-        #     stockcodes = re.findall('.....', row['stockcode'])
-        #     for stockno in stockcodes:
-        #         print(stockno)
-        #         newsDataToadd = pd.DataFrame([row['docID'], row['time'], stockno, row['stockname'], row['headline'], row['document']], columns = ['docID', 'time', 'stockcode', 'stockname', 'headline', 'document', 'docurl'])
-        #         newsData = newsData.concat(newsData, newsDataToadd)
+        newsDataDuplicate = newsData[newsData['stockcode'].str.len() > 5]
+        for index, row in newsDataDuplicate.iterrows():
+            stockcodes = re.findall('.....', row['stockcode'])
+            for stockno in stockcodes:
+                newsData = newsData.append({'docID': row['docID'],
+                    'time': row['time'], 'stockcode': stockno,
+                    'stockname': row['stockname'],
+                    'headline': row['headline'], 'document': row['document'],
+                    'docurl': row['docurl']}, ignore_index=True)
 
         # sortdata and match to team
         newsData = newsData.sort_values(['docID'], ascending=True)
         newsDataSorted = newsData[(newsData["docID"] > lastDocID) & (newsData["stockcode"].isin(stocklist))]
         for index, row in newsDataSorted.iterrows():
-            messagelist.append(str(row['docID']) + " " + row['time'] + "\n<b>" + row['stockcode'] + " " + row['stockname'] + "</b>\n" + row['headline'] + "\n<a href=\"" + row['docurl'] + "\">" + row['document'] + "</a>")
+            messagelist.append(str(row['docID']) + " " + row['time'] +
+            	"\n<b>" + row['stockcode'] + " " + row['stockname'] +
+            	"</b>\n" + row['headline'] + "\n<a href=\"" + row['docurl'] + "\">" + row['document'] + "</a>")
 
         # update next minID to list & save session
         lastDocID = newsData['docID'].iloc[-1]
@@ -104,7 +107,8 @@ def exScrape(teamID, chatID, slientMode):
         wr = open("session/" + str(chatID), "w+")
         wr.write(str(lastDocID))
         # newsData.to_csv("exNews_" + str(lastDocID) + ".csv")
-    except:
+
+    except (IndexError, ValueError):
         messagelist.append("Error, please try again later")
 
     return messagelist
