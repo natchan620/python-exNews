@@ -16,7 +16,8 @@ def start(bot, update, args):
             bot.sendMessage(
                 chat_id=update.message.chat_id,
                 text=message,
-                parse_mode='HTML')
+                parse_mode='HTML',
+                disable_web_page_preview=True)
     except (IndexError, ValueError):
         update.message.reply_text('Usage: /start <teamID>')
 
@@ -27,7 +28,8 @@ def alarm(bot, job):
         bot.sendMessage(
             chat_id=job.context[0],
             text=message,
-            parse_mode='HTML')
+            parse_mode='HTML',
+            disable_web_page_preview=True)
 
 
 def set(bot, update, args, job_queue, chat_data):

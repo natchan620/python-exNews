@@ -3,11 +3,16 @@ from bs4 import BeautifulSoup, Comment
 import requests
 import re
 import pandas as pd
+import logging
 from pathlib import Path
 
 
 def exScrape(teamID, chatID, slientMode):
-    # initialise
+    # Enable logging
+    logging.basicConfig(filename='logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    # initialise	
     data = {
         'docID': [],
         'time': [],
@@ -53,7 +58,7 @@ def exScrape(teamID, chatID, slientMode):
             soup = BeautifulSoup(html, "lxml")
 
             currTime = re.search(r'Current Date Time: ([0-9]*)', html).group(1)
-            print("Last update: " + currTime)
+            logger.info("Last update: " + currTime)
 
             comments = soup.find_all(text=lambda text: isinstance(text, Comment))
             rows = soup.find_all('tr', {'class': re.compile('row*')})
@@ -76,20 +81,20 @@ def exScrape(teamID, chatID, slientMode):
         newsData = newsData[['docID', 'time', 'stockcode', 'stockname', 'headline', 'document', 'docurl']]
 
 
-       # duplicate row if more than one code
-       # newsDataDuplicate = newsData[newsData["stockcode"] .str.len() > 5]
-       # for index, row in newsDataDuplicate.iterrows():
-       #     stockcodes = re.findall('.....', row['stockcode'])
-       #     for stockno in stockcodes:
-       #         print(stockno)
-       #         newsDataToadd = pd.DataFrame([row['docID'], row['time'], stockno, row['stockname'], row['headline'], row['document']], columns = ['docID', 'time', 'stockcode', 'stockname', 'headline', 'document', 'docurl'])
-       #         newsData = newsData.concat(newsData, newsDataToadd)
+        # duplicate row if more than one code
+        # newsDataDuplicate = newsData[newsData["stockcode"] .str.len() > 5]
+        # for index, row in newsDataDuplicate.iterrows():
+        #     stockcodes = re.findall('.....', row['stockcode'])
+        #     for stockno in stockcodes:
+        #         print(stockno)
+        #         newsDataToadd = pd.DataFrame([row['docID'], row['time'], stockno, row['stockname'], row['headline'], row['document']], columns = ['docID', 'time', 'stockcode', 'stockname', 'headline', 'document', 'docurl'])
+        #         newsData = newsData.concat(newsData, newsDataToadd)
 
         # sortdata and match to team
         newsData = newsData.sort_values(['docID'], ascending=True)
         newsDataSorted = newsData[(newsData["docID"] > lastDocID) & (newsData["stockcode"].isin(stocklist))]
         for index, row in newsDataSorted.iterrows():
-            messagelist.append(str(row['docID']) + " " + row['time'] + "\n<b>" + row['stockcode'] + " " + row['stockname'] + "</b>\n<i>" + row['headline'] + "</i>\n<a href=\"" + row['docurl'] + "\">" + row['document'] + "</a>")
+            messagelist.append(str(row['docID']) + " " + row['time'] + "\n<b>" + row['stockcode'] + " " + row['stockname'] + "</b>\n" + row['headline'] + "\n<a href=\"" + row['docurl'] + "\">" + row['document'] + "</a>")
 
         # update next minID to list & save session
         lastDocID = newsData['docID'].iloc[-1]
