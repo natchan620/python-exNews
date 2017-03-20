@@ -4,6 +4,7 @@ import exScrape
 import logging
 import configparser
 
+
 #telegram
 def start(bot, update, args):
     try:
@@ -98,6 +99,9 @@ def main():
 
     # log all errors
     dp.add_error_handler(error)
+
+    # initialise scraper cache
+    exScrape.initialise()
 
     # Start the Bot
     updater.start_polling()

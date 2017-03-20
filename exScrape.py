@@ -1,10 +1,18 @@
 # coding:utf-8
 from bs4 import BeautifulSoup, Comment
+from cachecontrol import CacheControl
 import requests
 import re
 import pandas as pd
 import logging
 from pathlib import Path
+
+
+def initialise():
+    # set HTML cache
+    sess = requests.session()
+    global cached_sess
+    cached_sess = CacheControl(sess)
 
 
 def exScrape(teamID, chatID, slientMode):
@@ -51,7 +59,7 @@ def exScrape(teamID, chatID, slientMode):
     # load html
     try:
         for url in urls:
-            r = requests.get(url)
+            r = cached_sess.get(url)
             r.encoding = 'utf-8'
 
             html = r.text
