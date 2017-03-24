@@ -36,13 +36,14 @@ def alarm(bot, job):
 def set(bot, update, args, job_queue, chat_data):
     """Adds a job to the queue"""
     chat_id = update.message.chat_id
+
+    Config = configparser.ConfigParser()
+    Config.read("config.ini")
+    due = int(Config.get('Settings', 'Due'))
+
     try:
         # args[0] should contain the time for the timer in seconds
-        due = int(args[0])
-        teamid = int(args[1])
-        if due < 0:
-            update.message.reply_text('Sorry we can not go back to future!')
-            return
+        teamid = int(args[0])
         if teamid < 1 | teamid > 27:
             update.message.reply_text('Please check your teamID')
             return
@@ -52,24 +53,24 @@ def set(bot, update, args, job_queue, chat_data):
         chat_data['job'] = job
         job_queue.put(job)
 
-        update.message.reply_text('Timer successfully set!')
+        update.message.reply_text("exNews subscription for Team: " + str(teamid) + " set. I will refresh every " + str(due) + " seconds.")
 
     except (IndexError, ValueError):
-        update.message.reply_text('Usage: /set <seconds> <teamID>')
+        update.message.reply_text('Usage: /set <teamID>')
 
 
 def unset(bot, update, chat_data):
     """Removes the job if the user changed their mind"""
 
     if 'job' not in chat_data:
-        update.message.reply_text('You have no active timer')
+        update.message.reply_text('You have no active subscription.')
         return
 
     job = chat_data['job']
     job.schedule_removal()
     del chat_data['job']
 
-    update.message.reply_text('Timer successfully unset!')
+    update.message.reply_text('Successfully unsubscribed.')
 
 
 def error(bot, update, error):
