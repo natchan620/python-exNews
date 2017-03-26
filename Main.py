@@ -83,7 +83,7 @@ def main():
     Config.read("config.ini")
 
     # Enable logging
-    logging.basicConfig(filename='logfile.log',format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(filename='files/logfile.log',format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
 
     updater = Updater(Config.get('Telegram', 'token'))
@@ -106,6 +106,7 @@ def main():
 
     # Start the Bot
     updater.start_polling()
+    logger.info("Bot started!")
 
     # Block until you press Ctrl-C or the process receives SIGINT, SIGTERM or
     # SIGABRT. This should be used most of the time, since start_polling() is
