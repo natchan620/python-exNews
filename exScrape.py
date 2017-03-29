@@ -124,7 +124,7 @@ def exScrape():
                     "</b>\n" + row['headline'] + "\n<a href=\"" + row['docurl'] + "\">" + row['document'] + "</a>"])
 
             # update next minID to list & save session
-            db.update({'lastDocID': newsData['docID'].iloc[-1]}, Query().chatID == user['chatID'])
+            db.update({'lastDocID': int(newsData['docID'].iloc[-1])}, Query().chatID == user['chatID'])
 
     except (IndexError, ValueError):
         subscribeList = db.search(Query().subscribe == True)

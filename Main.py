@@ -59,11 +59,7 @@ def main():
     logger = logging.getLogger(__name__)
 
     updater = Updater(Config.get('Telegram', 'token'))
-
-    # Set Refresh Job
     j = updater.job_queue
-    job_set = Job(alarm, int(Config.get('Settings', 'Due')))
-    j.put(job_set, next_t=0.0)
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
@@ -79,6 +75,11 @@ def main():
 
     # Start the Bot
     updater.start_polling()
+
+    # Set Refresh Job
+
+    job_set = Job(alarm, int(Config.get('Settings', 'Due')))
+    j.put(job_set, next_t=0.0)
     logger.info("Bot started!")
 
     # Block until you press Ctrl-C or the process receives SIGINT, SIGTERM or
