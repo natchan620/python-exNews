@@ -7,73 +7,45 @@ import configparser
 
 #telegram
 def start(bot, update, args):
-    try:
-        teamID = int(args[0])
-        if teamID < 1 | teamID > 27:
-            update.message.reply_text('Please check your teamID')
-            return
-        msgList = exScrape.exScrape(teamID, update.message.chat_id, False)
-        for message in msgList:
-            bot.sendMessage(
-                chat_id=update.message.chat_id,
-                text=message,
-                parse_mode='HTML',
-                disable_web_page_preview=True)
-    except (IndexError, ValueError):
-        update.message.reply_text('Usage: /start <teamID>')
-
-
-def alarm(bot, job):
-    msgList = exScrape.exScrape(job.context[1], job.context[0], True)
-    for message in msgList:
-        bot.sendMessage(
-            chat_id=job.context[0],
-            text=message,
-            parse_mode='HTML',
-            disable_web_page_preview=True)
-
-
-def set(bot, update, args, job_queue, chat_data):
-    """Adds a job to the queue"""
-    chat_id = update.message.chat_id
-
     Config = configparser.ConfigParser()
     Config.read("config.ini")
     due = int(Config.get('Settings', 'Due'))
 
     try:
-        # args[0] should contain the time for the timer in seconds
-        teamid = int(args[0])
-        if teamid < 1 | teamid > 27:
+        teamID = int(args[0])
+        if teamID < 1 | teamID > 27:
             update.message.reply_text('Please check your teamID')
             return
+        exScrape.addUser(update.message.chat_id, teamID)
 
-        # Add job to queue
-        job = Job(alarm, due, repeat=True, context=[chat_id, teamid])
-        chat_data['job'] = job
-        job_queue.put(job)
-
-        update.message.reply_text("exNews subscription for Team: " + str(teamid) + " set. I will refresh every " + str(due) + " seconds.")
+        update.message.reply_text("exNews subscription for Team: " + str(teamID) + " set. I will refresh every " + str(due) + " seconds. Send /stop to stop.")
 
     except (IndexError, ValueError):
-        update.message.reply_text('Usage: /set <teamID>')
+        update.message.reply_text('Usage: /start <teamID>')
 
 
-def unset(bot, update, chat_data):
+def alarm(bot, job):
+    msgList = exScrape.exScrape()
+    for message in msgList:
+        bot.sendMessage(
+            chat_id=message[0],
+            text=message[1],
+            parse_mode='HTML',
+            disable_web_page_preview=True)
+
+
+def unset(bot, update):
     """Removes the job if the user changed their mind"""
-
-    if 'job' not in chat_data:
-        update.message.reply_text('You have no active subscription.')
-        return
-
-    job = chat_data['job']
-    job.schedule_removal()
-    del chat_data['job']
-
-    update.message.reply_text('Successfully unsubscribed.')
+    result = exScrape.addUser(update.message.chat_id)
+    if result:
+        update.message.reply_text('Successfully unsubscribed.')
+    else:
+        update.message.reply_text('No current subscription found.')
 
 
 def error(bot, update, error):
+    logging.basicConfig(filename='files/logfile.log',format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logger = logging.getLogger(__name__)
     logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
@@ -88,15 +60,16 @@ def main():
 
     updater = Updater(Config.get('Telegram', 'token'))
 
+    # Set Refresh Job
+    j = updater.job_queue
+    job_set = Job(alarm, int(Config.get('Settings', 'Due')))
+    j.put(job_set, next_t=0.0)
+
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start, pass_args=True))
     dp.add_handler(CommandHandler("help", start))
-    dp.add_handler(CommandHandler("set", set,
-                                  pass_args=True,
-                                  pass_job_queue=True,
-                                  pass_chat_data=True))
-    dp.add_handler(CommandHandler("unset", unset, pass_chat_data=True))
+    dp.add_handler(CommandHandler("stop", unset))
 
     # log all errors
     dp.add_error_handler(error)
