@@ -34,9 +34,9 @@ def alarm(bot, job):
             disable_web_page_preview=True)
 
 
-def unset(bot, update):
+def stop(bot, update):
     """Removes the job if the user changed their mind"""
-    result = exScrape.addUser(update.message.chat_id)
+    result = exScrape.removeUser(update.message.chat_id)
     if result:
         update.message.reply_text('Successfully unsubscribed.')
     else:
@@ -65,7 +65,7 @@ def main():
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start, pass_args=True))
     dp.add_handler(CommandHandler("help", start))
-    dp.add_handler(CommandHandler("stop", unset))
+    dp.add_handler(CommandHandler("stop", stop))
 
     # log all errors
     dp.add_error_handler(error)
@@ -73,13 +73,13 @@ def main():
     # initialise scraper cache
     exScrape.initialise()
 
+    # Set Refresh Job
+    job_set = Job(alarm, int(Config.get('Settings', 'Due')))
+    j.put(job_set, next_t=0.0)
+
     # Start the Bot
     updater.start_polling()
 
-    # Set Refresh Job
-
-    job_set = Job(alarm, int(Config.get('Settings', 'Due')))
-    j.put(job_set, next_t=0.0)
     logger.info("Bot started!")
 
     # Block until you press Ctrl-C or the process receives SIGINT, SIGTERM or

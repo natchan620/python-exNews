@@ -30,7 +30,7 @@ def addUser(chatIDno, teamIDno):
         db.insert({'chatID': chatIDno,
                    'teamID': teamIDno,
                    'subscribe': True,
-                   'lastDocID': 0})
+                   'lastDocID': 2762023})
 
 
 def removeUser(chatIDno):

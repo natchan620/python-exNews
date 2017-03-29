@@ -1,3 +1,3 @@
-cd exnews-test
-sudo docker build -t test-exnews .
-docker run -d -v ~/exnews-test-files:/app/files test-exnews
+cd exnews
+sudo docker build -t prod-exnews .
+docker run -d -v ~/exnews-files:/app/files prod-exnews
