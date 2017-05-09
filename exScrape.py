@@ -19,7 +19,7 @@ def initialise():
     db = TinyDB('files/db.json')
     # load stocklist
     global TeamDF
-    TeamDF = pd.read_excel(open('listingone.xls', 'rb'), sheetname=0)
+    TeamDF = pd.read_excel(open('files/listingone.xls', 'rb'), sheetname=0)
     TeamDF.columns = ['code', 'EName', 'CName', 'team', 'x', 'y', 'z']
 
 

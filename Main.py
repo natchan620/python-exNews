@@ -44,7 +44,7 @@ def stop(bot, update):
 
 
 def error(bot, update, error):
-    logging.basicConfig(filename='files/logfile.log',format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(filename='files/logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
     logger.warning('Update "%s" caused error "%s"' % (update, error))
 
@@ -80,7 +80,7 @@ def main():
     # Start the Bot
     updater.start_polling()
 
-    logger.info("Bot started!")
+    logger.info("Bot started! 開始")
 
     # Block until you press Ctrl-C or the process receives SIGINT, SIGTERM or
     # SIGABRT. This should be used most of the time, since start_polling() is
