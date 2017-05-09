@@ -1,8 +1,10 @@
 #coding:utf-8
 from telegram.ext import Updater, CommandHandler, Job
 import exScrape
+import BdMtg
 import logging
 import configparser
+import datetime
 
 
 #telegram
@@ -13,7 +15,7 @@ def start(bot, update, args):
 
     try:
         teamID = int(args[0])
-        if teamID < 1 | teamID > 27:
+        if teamID < 1 | teamID > 29:
             update.message.reply_text('Please check your teamID')
             return
         exScrape.addUser(update.message.chat_id, teamID)
@@ -26,12 +28,34 @@ def start(bot, update, args):
 
 def alarm(bot, job):
     msgList = exScrape.exScrape()
+    logging.basicConfig(filename='files/logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logger = logging.getLogger(__name__)
     for message in msgList:
         bot.sendMessage(
             chat_id=message[0],
             text=message[1],
             parse_mode='HTML',
             disable_web_page_preview=True)
+        if(is_ascii(message[1])):
+            logger.info("Pushed ID#" + str(message[0]) + ": " + message[1].replace('\n', ''))
+
+
+def is_ascii(s):
+    return all(ord(c) < 128 for c in s)
+
+
+def meeting(bot, job):
+    msgList = BdMtg.BoardMeeting()
+    logging.basicConfig(filename='files/logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    for message in msgList:
+        bot.sendMessage(
+            chat_id=message[0],
+            text=message[1],
+            parse_mode='HTML',
+            disable_web_page_preview=True)
+        if(is_ascii(message[1])):
+            logger.info("Meeting ID#" + str(message[0]) + ": " + message[1].replace('\n', ''))
 
 
 def stop(bot, update):
@@ -72,15 +96,21 @@ def main():
 
     # initialise scraper cache
     exScrape.initialise()
+    BdMtg.initialise()
 
     # Set Refresh Job
     job_set = Job(alarm, int(Config.get('Settings', 'Due')))
     j.put(job_set, next_t=0.0)
 
+    # Set Refresh Job
+    meeting_time = datetime.datetime.strptime(Config.get('Settings', 'MeetingTime'), '%H:%M').time()
+    meeting_set = Job(meeting, int(Config.get('Settings', 'Meeting')))
+    j.put(meeting_set, next_t=0.0)
+
     # Start the Bot
     updater.start_polling()
 
-    logger.info("Bot started! 開始")
+    logger.info("Bot started!")
 
     # Block until you press Ctrl-C or the process receives SIGINT, SIGTERM or
     # SIGABRT. This should be used most of the time, since start_polling() is

@@ -73,7 +73,7 @@ def exScrape():
             soup = BeautifulSoup(html, "lxml")
 
             currTime = re.search(r'Current Date Time: ([0-9]*)', html).group(1)
-            logger.info("Update: " + currTime)
+            logger.info("Updated: " + currTime)
 
             comments = soup.find_all(text=lambda text: isinstance(text, Comment))
             rows = soup.find_all('tr', {'class': re.compile('row*')})
