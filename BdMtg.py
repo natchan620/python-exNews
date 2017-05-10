@@ -1,11 +1,12 @@
 # coding:utf-8
-from bs4 import BeautifulSoup, Comment
+from bs4 import BeautifulSoup
 from cachecontrol import CacheControl
 from tinydb import TinyDB, Query
 import requests
 import re
 import pandas as pd
 import logging
+import datetime
 
 
 def initialise():
@@ -66,6 +67,8 @@ def BoardMeeting():
 
         newsData = pd.DataFrame(data)
         newsData = newsData[['BM_Date', 'stockname', 'stockcode', 'purpose', 'period']]
+        newsData['BM_Date'] = newsData['BM_Date'].apply(lambda x: datetime.datetime.strptime(x, '%d/%m/%Y'))
+        newsData = newsData.sort_values(['BM_Date'], ascending=True)
 
         # Start loop for each user
         subscribeList = db.search(Query().subscribe == True)
@@ -76,10 +79,13 @@ def BoardMeeting():
                 stocklist.append(str(row['code']))
 
             newsDataSorted = newsData[(newsData["stockcode"].isin(stocklist))]
+            push_msg = ["Coming Board Meeting Dates for Team"]
             for index, row in newsDataSorted.iterrows():
-                messagelist.append([user['chatID'], "<b>" + row['BM_Date'] +
-                    "\n</b>" + row['stockcode'] + " " + row['stockname'] +
-                    "\n" + row['purpose'] + " " + row['period']])
+                push_msg.append("\n<b>" + datetime.datetime.strftime(row['BM_Date'], '%d/%m/%Y') +
+                                "\n</b>" + row['stockcode'] + " " + row['stockname'] +
+                                "\n" + row['purpose'] +
+                                "\n" + row['period'])
+            messagelist.append([user['chatID'], ''.join(push_msg)])
 
     except (IndexError, ValueError):
         subscribeList = db.search(Query().subscribe == True)

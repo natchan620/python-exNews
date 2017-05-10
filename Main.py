@@ -102,15 +102,26 @@ def main():
     job_set = Job(alarm, int(Config.get('Settings', 'Due')))
     j.put(job_set, next_t=0.0)
 
-    # Set Refresh Job
+    # Set Refresh Meeting
     meeting_time = datetime.datetime.strptime(Config.get('Settings', 'MeetingTime'), '%H:%M').time()
+    next_datetime = datetime.datetime.combine(datetime.date.today(), meeting_time)
+    next_datetime += datetime.timedelta(hours=int(Config.get('Settings', 'GMT_Offset')))
+
+    print(next_datetime)
+    # if time passed, then do tomorrow
+    if datetime.datetime.now().time() > meeting_time:
+        next_datetime += datetime.timedelta(days=1)
+
+    next_t_mjob = (next_datetime - datetime.datetime.now()).total_seconds()
     meeting_set = Job(meeting, int(Config.get('Settings', 'Meeting')))
+    print(str(next_t_mjob))
+    # j.put(meeting_set, next_t=next_t_mjob)
     j.put(meeting_set, next_t=0.0)
 
     # Start the Bot
     updater.start_polling()
 
-    logger.info("Bot started!")
+    logger.info("!Bot started!")
 
     # Block until you press Ctrl-C or the process receives SIGINT, SIGTERM or
     # SIGABRT. This should be used most of the time, since start_polling() is
