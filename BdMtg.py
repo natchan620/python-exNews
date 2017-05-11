@@ -79,7 +79,7 @@ def BoardMeeting():
                 stocklist.append(str(row['code']))
 
             newsDataSorted = newsData[(newsData["stockcode"].isin(stocklist))]
-            push_msg = ["Coming Board Meeting Dates for Team"]
+            push_msg = ["Coming Board Meeting Dates for Team " + str(user['teamID'])]
             for index, row in newsDataSorted.iterrows():
                 push_msg.append("\n<b>" + datetime.datetime.strftime(row['BM_Date'], '%d/%m/%Y') +
                                 "\n</b>" + row['stockcode'] + " " + row['stockname'] +

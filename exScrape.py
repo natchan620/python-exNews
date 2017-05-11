@@ -24,13 +24,16 @@ def initialise():
 
 
 def addUser(chatIDno, teamIDno):
-    if len(db.search(Query().chatID == chatIDno)) > 0:
-        db.update({'subscribe': True, 'teamID': teamIDno}, Query().chatID == chatIDno)
+    if len(db.search((Query().chatID == chatIDno) & (Query().teamID == teamIDno))) > 0:
+        db.update({'subscribe': True}, ((Query().chatID == chatIDno) & (Query().teamID == teamIDno)))
     else:
+        lastDocID = 2809759
+        if len(db) > 0:
+            lastDocID = db.all()[0]['lastDocID']
         db.insert({'chatID': chatIDno,
                    'teamID': teamIDno,
                    'subscribe': True,
-                   'lastDocID': 2762023})
+                   'lastDocID': lastDocID})
 
 
 def removeUser(chatIDno):
@@ -119,7 +122,7 @@ def exScrape():
 
             newsDataSorted = newsData[(newsData["docID"] > user['lastDocID']) & (newsData["stockcode"].isin(stocklist))]
             for index, row in newsDataSorted.iterrows():
-                messagelist.append([user['chatID'], str(row['docID']) + " " + row['time'] +
+                messagelist.append([user['chatID'], "Team " + str(user['teamID']) + " " + row['time'] + " #" + str(row['docID']) +
                     "\n<b>" + row['stockcode'] + " " + row['stockname'] +
                     "</b>\n" + row['headline'] + "\n<a href=\"" + row['docurl'] + "\">" + row['document'] + "</a>"])
 

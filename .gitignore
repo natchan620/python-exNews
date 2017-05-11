@@ -1,3 +1,9 @@
+# Private files
+command.test.txt
+config.ini.prod
+files/listingone.xls
+files/db.json.bak
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
