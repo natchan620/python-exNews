@@ -1,5 +1,6 @@
 #coding:utf-8
 from telegram.ext import Updater, CommandHandler, Job
+from tinydb import TinyDB, Query
 import exScrape
 import BdMtg
 import teamUpdate
@@ -10,7 +11,7 @@ import datetime
 
 # telegram
 def AboutMe(bot, update):
-    update.message.reply_text("ExNews Push build 20170518" +
+    update.message.reply_text("ExNews Push build 20170522" +
                                 "\n" +
                                 "\n" + "Fuction: " +
                                 "\n" + "- Update ex news website every 90 seconds" +
@@ -21,6 +22,7 @@ def AboutMe(bot, update):
                                 "\n" + "- 20170516: Auto update team Excel" +
                                 "\n" + "- 20170516: Added board meeting dates" +
                                 "\n" + "- 20170518: Support multiple team subscription" +
+                                "\n" + "- 20170522: Added statistics" +
                                 "\n" +
                                 "\n" + "Usage: " +
                                 "\n" + "- Start subscription: /start <teamID> (eg: /start 10)" +
@@ -103,6 +105,29 @@ def stop(bot, update):
         update.message.reply_text('No current subscription found.')
 
 
+def stat_admin(bot, update):
+    # read config
+    Config = configparser.ConfigParser()
+    Config.read("config.ini")
+    admin_id = Config.get('Telegram', 'Admin')
+    if(str(update.message.chat_id) == admin_id):
+        db = TinyDB('files/db.json')
+        subscribeList = db.all()
+        push_msg = ["User List:"]
+        for user in subscribeList:
+            push_msg.append("\n<b>" + str(user['chatID']) +
+                                "\n</b>Team " + str(user['teamID']) + ": " + str(user['subscribe']) +
+                                "\nUsername: " + bot.getChat(user['chatID']).username + bot.getChat(user['chatID']).title +
+                                "\nName: " + bot.getChat(user['chatID']).first_name + " " + bot.getChat(user['chatID']).last_name)
+        bot.sendMessage(
+            chat_id=update.message.chat_id,
+            text=''.join(push_msg),
+            parse_mode='HTML',
+            disable_web_page_preview=True)
+    else:
+        update.message.reply_text("Sorry, you're not authorised.")  
+
+
 def error(bot, update, error):
     logging.basicConfig(filename='files/logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
@@ -128,6 +153,7 @@ def main():
     dp.add_handler(CommandHandler("help", AboutMe))
     dp.add_handler(CommandHandler("about", AboutMe))
     dp.add_handler(CommandHandler("stop", stop))
+    dp.add_handler(CommandHandler("stat", stat_admin))
 
     # log all errors
     dp.add_error_handler(error)
