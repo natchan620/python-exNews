@@ -179,8 +179,8 @@ def main():
     next_t_mjob = (next_datetime - datetime.datetime.now()).total_seconds()
     meeting_set = Job(meeting, int(Config.get('Settings', 'Meeting')))
     logger.info("Seconds to get Board Meeting List:" + str(next_t_mjob))
-    # j.put(meeting_set, next_t=next_t_mjob)
-    j.put(meeting_set, next_t=0.0)
+    j.put(meeting_set, next_t=next_t_mjob)
+    # j.put(meeting_set, next_t=0.0)
 
     # 3-Set Refresh Team
     teamupdate_time = datetime.datetime.strptime(Config.get('Settings', 'Update_TeamTime'), '%H:%M').time()
