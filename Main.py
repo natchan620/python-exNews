@@ -11,7 +11,7 @@ import datetime
 
 # telegram
 def AboutMe(bot, update):
-    update.message.reply_text("ExNews Push build 20170522" +
+    update.message.reply_text("ExNews Push build 20170814" +
                                 "\n" +
                                 "\n" + "Fuction: " +
                                 "\n" + "- Update ex news website every 90 seconds" +
@@ -23,6 +23,7 @@ def AboutMe(bot, update):
                                 "\n" + "- 20170516: Added board meeting dates" +
                                 "\n" + "- 20170518: Support multiple team subscription" +
                                 "\n" + "- 20170522: Added statistics" +
+                                "\n" + "- 20170814: Fix meeting date error" +
                                 "\n" +
                                 "\n" + "Usage: " +
                                 "\n" + "- Start subscription: /start <teamID> (eg: /start 10)" +
@@ -178,7 +179,8 @@ def main():
     next_t_mjob = (next_datetime - datetime.datetime.now()).total_seconds()
     meeting_set = Job(meeting, int(Config.get('Settings', 'Meeting')))
     logger.info("Seconds to get Board Meeting List:" + str(next_t_mjob))
-    j.put(meeting_set, next_t=next_t_mjob)
+    # j.put(meeting_set, next_t=next_t_mjob)
+    j.put(meeting_set, next_t=0.0)
 
     # 3-Set Refresh Team
     teamupdate_time = datetime.datetime.strptime(Config.get('Settings', 'Update_TeamTime'), '%H:%M').time()
@@ -192,6 +194,7 @@ def main():
     teamUpdate_set = Job(teamUpdateJob, int(Config.get('Settings', 'Update_Team')))
     logger.info("Seconds to get Excel List:" + str(next_updateteam_mjob))
     j.put(teamUpdate_set, next_t=next_updateteam_mjob)
+    # j.put(teamUpdate_set, next_t=0.0)
 
     # Start the Bot
     updater.start_polling()

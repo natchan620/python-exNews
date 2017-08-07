@@ -42,54 +42,58 @@ def BoardMeeting():
     'http://www.hkgem.com/prices/diaries/diaries2/ebmngem.htm']
 
     # load html
-    try:
-        for url in urls:
-            r = cached_sess.get(url)
-            r.encoding = 'utf-8'
 
-            html = r.text
-            soup = BeautifulSoup(html, "lxml")
+    for url in urls:
+        r = cached_sess.get(url)
+        r.encoding = 'utf-8'
 
-            currTime = re.search(r'Date : ([0-9/]*)', html).group(1)
-            logger.info("Updated: " + currTime)
+        html = r.text
+        soup = BeautifulSoup(html, "lxml")
 
-            table = soup.find("table", {"class": "textfont"})
-            rows = table.find_all('tr')
+        currTime = re.search(r'Date : ([0-9/]*)', html).group(1)
+        logger.info("Updated: " + currTime)
 
-            for row in rows[2:]:
-                cols = row.find_all('td')
-                data['BM_Date'].append(cols[0].get_text())
-                data['stockname'].append(cols[2].get_text())
-                code = re.sub("[^0-9]", "", cols[3].get_text())
-                data['stockcode'].append(code)
-                data['purpose'].append(cols[4].get_text())
-                data['period'].append(cols[5].get_text())
+        table = soup.find("table", {"class": "textfont"})
+        rows = table.find_all('tr')
 
-        newsData = pd.DataFrame(data)
-        newsData = newsData[['BM_Date', 'stockname', 'stockcode', 'purpose', 'period']]
-        newsData['BM_Date'] = newsData['BM_Date'].apply(lambda x: datetime.datetime.strptime(x, '%d/%m/%Y'))
-        newsData = newsData.sort_values(['BM_Date'], ascending=True)
+        for row in rows[2:]:
+            cols = row.find_all('td')
+            # fix date range error
+            datestring = cols[0].get_text()
+            datestring = re.sub(r"-[0-9][0-9]", "", datestring)
+            data['BM_Date'].append(datestring)
 
-        # Start loop for each user
-        subscribeList = db.search(Query().subscribe == True)
-        for user in subscribeList:
-            df = TeamDF[(TeamDF['team'] == int(user['teamID']))]
-            stocklist = []
-            for index, row in df.iterrows():
-                stocklist.append(str(row['code']))
+            data['stockname'].append(cols[2].get_text())
+            code = re.sub("[^0-9]", "", cols[3].get_text())
+            data['stockcode'].append(code)
+            data['purpose'].append(cols[4].get_text())
+            data['period'].append(cols[5].get_text())
 
-            newsDataSorted = newsData[(newsData["stockcode"].isin(stocklist))]
-            push_msg = ["Coming Board Meeting Dates for Team " + str(user['teamID'])]
-            for index, row in newsDataSorted.iterrows():
-                push_msg.append("\n<b>" + datetime.datetime.strftime(row['BM_Date'], '%d/%m/%Y') +
-                                "\n</b>" + row['stockcode'] + " " + row['stockname'] +
-                                "\n" + row['purpose'] +
-                                "\n" + row['period'])
-            messagelist.append([user['chatID'], ''.join(push_msg)])
+    newsData = pd.DataFrame(data)
+    newsData = newsData[['BM_Date', 'stockname', 'stockcode', 'purpose', 'period']]
+    newsData['BM_Date'] = newsData['BM_Date'].apply(lambda x: datetime.datetime.strptime(x, '%d/%m/%Y'))
+    newsData = newsData.sort_values(['BM_Date'], ascending=True)
 
-    except (IndexError, ValueError):
-        subscribeList = db.search(Query().subscribe == True)
-        for user in subscribeList:
-            messagelist.append([user['chatID'], "Get meeting dates error, will try again later."])
+    # Start loop for each user
+    subscribeList = db.search(Query().subscribe == True)
+    for user in subscribeList:
+        df = TeamDF[(TeamDF['team'] == int(user['teamID']))]
+        stocklist = []
+        for index, row in df.iterrows():
+            stocklist.append(str(row['code']))
+
+        newsDataSorted = newsData[(newsData["stockcode"].isin(stocklist))]
+        push_msg = ["Coming Board Meeting Dates for Team " + str(user['teamID'])]
+        for index, row in newsDataSorted.iterrows():
+            push_msg.append("\n<b>" + datetime.datetime.strftime(row['BM_Date'], '%d/%m/%Y') +
+                            "\n</b>" + row['stockcode'] + " " + row['stockname'] +
+                            "\n" + row['purpose'] +
+                            "\n" + row['period'])
+        messagelist.append([user['chatID'], ''.join(push_msg)])
+
+    # except (IndexError, ValueError):
+    #     subscribeList = db.search(Query().subscribe == True)
+    #     for user in subscribeList:
+    #         messagelist.append([user['chatID'], "Get meeting dates error, will try again later."])
 
     return messagelist
