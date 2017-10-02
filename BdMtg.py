@@ -60,7 +60,7 @@ def BoardMeeting():
             cols = row.find_all('td')
             # fix date range error
             datestring = cols[0].get_text()
-            datestring = re.sub(r"-[0-9][0-9]", "", datestring)
+            datestring = re.sub(r"[0-9][0-9]-", "", datestring)
             data['BM_Date'].append(datestring)
 
             data['stockname'].append(cols[2].get_text())
