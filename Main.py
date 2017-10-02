@@ -24,6 +24,7 @@ def AboutMe(bot, update):
                                 "\n" + "- 20170518: Support multiple team subscription" +
                                 "\n" + "- 20170522: Added statistics" +
                                 "\n" + "- 20170814: Fix meeting date error" +
+                                "\n" + "- 20171002: Fix phrase Excel error" +
                                 "\n" +
                                 "\n" + "Usage: " +
                                 "\n" + "- Start subscription: /start <teamID> (eg: /start 10)" +

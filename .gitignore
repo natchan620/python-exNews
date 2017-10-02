@@ -3,6 +3,7 @@ command.test.txt
 config.ini.prod
 files/listingone.xls
 files/db.json.bak
+files/backup/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
