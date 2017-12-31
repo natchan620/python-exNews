@@ -1,3 +1,2 @@
 cd exnews
-sudo docker build -t prod-exnews .
-docker run -d -v ~/exnews-files:/app/files prod-exnews
+sudo docker build -t prod-exnews .  && docker run -d -v ~/exnews-files:/app/files prod-exnews

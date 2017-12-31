@@ -11,7 +11,7 @@ import datetime
 
 # telegram
 def AboutMe(bot, update):
-    update.message.reply_text("ExNews Push build 20170814" +
+    update.message.reply_text("ExNews Push build 20171231" +
                                 "\n" +
                                 "\n" + "Fuction: " +
                                 "\n" + "- Update ex news website every 90 seconds" +
@@ -25,6 +25,7 @@ def AboutMe(bot, update):
                                 "\n" + "- 20170522: Added statistics" +
                                 "\n" + "- 20170814: Fix meeting date error" +
                                 "\n" + "- 20171002: Fix phrase Excel error" +
+                                "\n" + "- 20171231: Fix user list error" +
                                 "\n" +
                                 "\n" + "Usage: " +
                                 "\n" + "- Start subscription: /start <teamID> (eg: /start 10)" +
@@ -115,17 +116,16 @@ def stat_admin(bot, update):
     if(str(update.message.chat_id) == admin_id):
         db = TinyDB('files/db.json')
         subscribeList = db.all()
-        push_msg = ["User List:"]
         for user in subscribeList:
-            push_msg.append("\n<b>" + str(user['chatID']) +
+        	bot.sendMessage(
+                chat_id=update.message.chat_id,
+                # text= push_msg,
+                text = "<b>" + str(user['chatID']) +
                                 "\n</b>Team " + str(user['teamID']) + ": " + str(user['subscribe']) +
                                 "\nUsername: " + bot.getChat(user['chatID']).username + bot.getChat(user['chatID']).title +
-                                "\nName: " + bot.getChat(user['chatID']).first_name + " " + bot.getChat(user['chatID']).last_name)
-        bot.sendMessage(
-            chat_id=update.message.chat_id,
-            text=''.join(push_msg),
-            parse_mode='HTML',
-            disable_web_page_preview=True)
+                                "\nName: " + bot.getChat(user['chatID']).first_name + " " + bot.getChat(user['chatID']).last_name,
+                parse_mode='HTML',
+                disable_web_page_preview=True)
     else:
         update.message.reply_text("Sorry, you're not authorised.")  
 

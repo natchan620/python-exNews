@@ -29,7 +29,7 @@ def TeamUpdate():
 
     # load xls
     try:
-        r = cached_sess.get("https://www.hkex.com.hk/eng/listing/listreq_pro/listcontact/documents/listingone.xls")
+        r = cached_sess.get("http://www.hkex.com.hk/-/media/HKEX-Market/Listing/Rules-and-Guidance/Other-Resources/Listed-Issuers/Contact-Persons-in-HKEX-Listing-Department-for-Listed-Companies/listingone.xls?la=en")
         lastModified = HTTPparsedate(r.headers['Last-Modified'])
         lastModified += datetime.timedelta(hours=8)
         lastModString = datetime.datetime.strftime(lastModified, '%d-%b-%Y %H:%M:%S')
