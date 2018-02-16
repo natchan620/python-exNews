@@ -89,6 +89,10 @@ def BoardMeeting():
                             "\n</b>" + row['stockcode'] + " " + row['stockname'] +
                             "\n" + row['purpose'] +
                             "\n" + row['period'])
+        
+        if len(push_msg) < 2:
+            push_msg.append("\n<i>(no results coming)</i>")
+
         messagelist.append([user['chatID'], ''.join(push_msg)])
 
     # except (IndexError, ValueError):

@@ -3,20 +3,23 @@ from telegram.ext import Updater, CommandHandler, Job
 from tinydb import TinyDB, Query
 import exScrape
 import BdMtg
+import BdMtgRelease
 import teamUpdate
 import logging
 import configparser
 import datetime
+import pytz
 
 
 # telegram
 def AboutMe(bot, update):
-    update.message.reply_text("ExNews Push build 20171231" +
+    update.message.reply_text("ExNews Push build 20180215" +
                                 "\n" +
                                 "\n" + "Fuction: " +
                                 "\n" + "- Update ex news website every 90 seconds" +
-                                "\n" + "- Update board meeting dates (MB & GEM) every night" +
-                                "\n" + "- Update team Excel every night" +
+                                "\n" + "- Check results release 11:10 PM every day" +
+                                "\n" + "- Update board meeting dates (MB & GEM) 11:20 PM every day" +
+                                "\n" + "- Update team Excel around 11:30 PM every day" +
                                 "\n" + 
                                 "\n" + "Change log:" +
                                 "\n" + "- 20170516: Auto update team Excel" +
@@ -25,7 +28,9 @@ def AboutMe(bot, update):
                                 "\n" + "- 20170522: Added statistics" +
                                 "\n" + "- 20170814: Fix meeting date error" +
                                 "\n" + "- 20171002: Fix phrase Excel error" +
-                                "\n" + "- 20171231: Fix user list error" +
+                                "\n" + "- 20171231: Fix user list error & message error" +
+                                "\n" + "- 20180103: Fix message cannot sent to all users" +
+                                "\n" + "- 20180215: Add function to check results released" +
                                 "\n" +
                                 "\n" + "Usage: " +
                                 "\n" + "- Start subscription: /start <teamID> (eg: /start 10)" +
@@ -42,7 +47,7 @@ def start(bot, update, args):
 
     try:
         teamID = int(args[0])
-        if teamID < 1 | teamID > 29:
+        if teamID < 1 | teamID > 99:
             update.message.reply_text('Please check your teamID')
             return
         exScrape.addUser(update.message.chat_id, teamID)
@@ -52,51 +57,76 @@ def start(bot, update, args):
     except (IndexError, ValueError):
         update.message.reply_text('Usage: /start <teamID> (eg: /start 30)')
 
-
 def alarm(bot, job):
     msgList = exScrape.exScrape()
     logging.basicConfig(filename='files/logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
     for message in msgList:
-        bot.sendMessage(
-            chat_id=message[0],
-            text=message[1],
-            parse_mode='HTML',
-            disable_web_page_preview=True)
-        if(is_ascii(message[1])):
-            logger.info("Pushed ID#" + str(message[0]) + ": " + message[1].replace('\n', ''))
+        try:
+            bot.sendMessage(
+                chat_id=message[0],
+                text=message[1],
+                parse_mode='HTML',
+                disable_web_page_preview=True)
+            if(is_ascii(message[1])):
+                logger.info("Pushed ID#" + str(message[0]) + ": " + message[1].replace('\n', ''))
 
+        except BaseException as e:
+            logger.error("Pushed ID#" + str(message[0]) + ": " + str(e))
 
 def is_ascii(s):
     return all(ord(c) < 128 for c in s)
-
 
 def meeting(bot, job):
     msgList = BdMtg.BoardMeeting()
     logging.basicConfig(filename='files/logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
     for message in msgList:
-        bot.sendMessage(
-            chat_id=message[0],
-            text=message[1],
-            parse_mode='HTML',
-            disable_web_page_preview=True)
-        if(is_ascii(message[1])):
-            logger.info("Meeting ID#" + str(message[0]) + ": " + message[1].replace('\n', ''))
+        try:
+            bot.sendMessage(
+                chat_id=message[0],
+                text=message[1],
+                parse_mode='HTML',
+                disable_web_page_preview=True)
+            if(is_ascii(message[1])):
+                logger.info("Meeting ID#" + str(message[0]) + ": " + message[1].replace('\n', ''))
 
+        except BaseException as e:
+            logger.error("Meeting ID#" + str(message[0]) + ": " + str(e))
+
+def checkresultsJob(bot, job):
+    msgList = BdMtgRelease.BoardMeetingCheck()
+    logging.basicConfig(filename='files/logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    for message in msgList:
+        try:
+            bot.sendMessage(
+                chat_id=message[0],
+                text=message[1],
+                parse_mode='HTML',
+                disable_web_page_preview=True)
+            if(is_ascii(message[1])):
+                logger.info("Results check ID#" + str(message[0]) + ": " + message[1].replace('\n', ''))
+
+        except BaseException as e:
+            logger.error("Results check ID#" + str(message[0]) + ": " + str(e))
 
 def teamUpdateJob(bot, job):
     msgList = teamUpdate.TeamUpdate()
     logging.basicConfig(filename='files/logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
     for message in msgList:
-        bot.sendMessage(
-            chat_id=message[0],
-            text=message[1],
-            parse_mode='HTML',
-            disable_web_page_preview=True)
-        if(is_ascii(message[1])):
-            logger.info("Team Excel Update ID#" + str(message[0]) + ": " + message[1].replace('\n', ''))
+        try:
+            bot.sendMessage(
+                chat_id=message[0],
+                text=message[1],
+                parse_mode='HTML',
+                disable_web_page_preview=True)
+            if(is_ascii(message[1])):
+                logger.info("Team Excel Update ID#" + str(message[0]) + ": " + message[1].replace('\n', ''))
+
+        except BaseException as e:
+            logger.error("Team Excel Update ID#" + str(message[0]) + ": " + str(e))
 
 
 def stop(bot, update):
@@ -107,7 +137,6 @@ def stop(bot, update):
     else:
         update.message.reply_text('No current subscription found.')
 
-
 def stat_admin(bot, update):
     # read config
     Config = configparser.ConfigParser()
@@ -117,7 +146,7 @@ def stat_admin(bot, update):
         db = TinyDB('files/db.json')
         subscribeList = db.all()
         for user in subscribeList:
-        	bot.sendMessage(
+            bot.sendMessage(
                 chat_id=update.message.chat_id,
                 # text= push_msg,
                 text = "<b>" + str(user['chatID']) +
@@ -129,12 +158,10 @@ def stat_admin(bot, update):
     else:
         update.message.reply_text("Sorry, you're not authorised.")  
 
-
 def error(bot, update, error):
     logging.basicConfig(filename='files/logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
     logger.warning('Update "%s" caused error "%s"' % (update, error))
-
 
 def main():
     # read config
@@ -163,12 +190,14 @@ def main():
     # initialise scraper cache
     exScrape.initialise()
     BdMtg.initialise()
+    BdMtgRelease.initialise()
     teamUpdate.initialise()
 
     # 1-Set Refresh Job
     job_set = Job(alarm, int(Config.get('Settings', 'Due')))
     j.put(job_set, next_t=0.0)
 
+    
     # 2-Set Refresh Meeting
     meeting_time = datetime.datetime.strptime(Config.get('Settings', 'MeetingTime'), '%H:%M').time()
     next_datetime = datetime.datetime.combine(datetime.date.today(), meeting_time)
@@ -181,7 +210,7 @@ def main():
     meeting_set = Job(meeting, int(Config.get('Settings', 'Meeting')))
     logger.info("Seconds to get Board Meeting List:" + str(next_t_mjob))
     j.put(meeting_set, next_t=next_t_mjob)
-    # j.put(meeting_set, next_t=0.0)
+    # j.put(meeting_set, next_t=0.0) # debug use
 
     # 3-Set Refresh Team
     teamupdate_time = datetime.datetime.strptime(Config.get('Settings', 'Update_TeamTime'), '%H:%M').time()
@@ -195,7 +224,21 @@ def main():
     teamUpdate_set = Job(teamUpdateJob, int(Config.get('Settings', 'Update_Team')))
     logger.info("Seconds to get Excel List:" + str(next_updateteam_mjob))
     j.put(teamUpdate_set, next_t=next_updateteam_mjob)
-    # j.put(teamUpdate_set, next_t=0.0)
+    # j.put(teamUpdate_set, next_t=0.0) # debug use
+
+    # 4-Set Check results
+    checkresults_time = datetime.datetime.strptime(Config.get('Settings', 'CheckResultsTime'), '%H:%M').time()
+    nextcheckresults_datetime = datetime.datetime.combine(datetime.date.today(), checkresults_time)
+
+    # if time passed, then do tomorrow
+    if datetime.datetime.now().time() > nextcheckresults_datetime.time():
+        nextcheckresults_datetime += datetime.timedelta(days=1)
+
+    next_checkresults_mjob = (nextcheckresults_datetime - datetime.datetime.now()).total_seconds()
+    teamUpdate_set = Job(checkresultsJob, int(Config.get('Settings', 'CheckResults')))
+    logger.info("Seconds to get Excel List:" + str(next_checkresults_mjob))
+    # j.put(teamUpdate_set, next_t=next_checkresults_mjob)
+    j.put(teamUpdate_set, next_t=0.0) # debug use
 
     # Start the Bot
     updater.start_polling()
