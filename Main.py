@@ -13,7 +13,7 @@ import pytz
 
 # telegram
 def AboutMe(bot, update):
-    update.message.reply_text("ExNews Push build 20180215" +
+    update.message.reply_text("ExNews Push build 20180516" +
                                 "\n" +
                                 "\n" + "Fuction: " +
                                 "\n" + "- Update ex news website every 90 seconds" +
@@ -31,6 +31,7 @@ def AboutMe(bot, update):
                                 "\n" + "- 20171231: Fix user list error & message error" +
                                 "\n" + "- 20180103: Fix message cannot sent to all users" +
                                 "\n" + "- 20180215: Add function to check results released" +
+                                "\n" + "- 20180518: Fix Telegram for Python update" +
                                 "\n" +
                                 "\n" + "Usage: " +
                                 "\n" + "- Start subscription: /start <teamID> (eg: /start 10)" +
@@ -194,51 +195,54 @@ def main():
     teamUpdate.initialise()
 
     # 1-Set Refresh Job
-    job_set = Job(alarm, int(Config.get('Settings', 'Due')))
-    j.put(job_set, next_t=0.0)
+    # job_set = Job(alarm, int(Config.get('Settings', 'Due')))
+    # j.put(job_set, next_t=0.0)
+    j.run_repeating(alarm, int(Config.get('Settings', 'Due')), first=0.0)
 
-    
     # 2-Set Refresh Meeting
     meeting_time = datetime.datetime.strptime(Config.get('Settings', 'MeetingTime'), '%H:%M').time()
-    next_datetime = datetime.datetime.combine(datetime.date.today(), meeting_time)
+    # next_datetime = datetime.datetime.combine(datetime.date.today(), meeting_time)
 
-    # if time passed, then do tomorrow
-    if datetime.datetime.now().time() > meeting_time:
-        next_datetime += datetime.timedelta(days=1)
+    # # if time passed, then do tomorrow
+    # if datetime.datetime.now().time() > meeting_time:
+    #     next_datetime += datetime.timedelta(days=1)
 
-    next_t_mjob = (next_datetime - datetime.datetime.now()).total_seconds()
-    meeting_set = Job(meeting, int(Config.get('Settings', 'Meeting')))
-    logger.info("Seconds to get Board Meeting List:" + str(next_t_mjob))
-    j.put(meeting_set, next_t=next_t_mjob)
+    # next_t_mjob = (next_datetime - datetime.datetime.now()).total_seconds()
+    # meeting_set = Job(meeting, int(Config.get('Settings', 'Meeting')))
+    # logger.info("Seconds to get Board Meeting List:" + str(next_t_mjob))
+    # j.put(meeting_set, next_t=next_t_mjob)
+    j.run_daily(meeting, meeting_time)
     # j.put(meeting_set, next_t=0.0) # debug use
 
     # 3-Set Refresh Team
     teamupdate_time = datetime.datetime.strptime(Config.get('Settings', 'Update_TeamTime'), '%H:%M').time()
-    nextTeam_datetime = datetime.datetime.combine(datetime.date.today(), teamupdate_time)
+    # nextTeam_datetime = datetime.datetime.combine(datetime.date.today(), teamupdate_time)
 
-    # if time passed, then do tomorrow
-    if datetime.datetime.now().time() > teamupdate_time:
-        nextTeam_datetime += datetime.timedelta(days=1)
+    # # if time passed, then do tomorrow
+    # if datetime.datetime.now().time() > teamupdate_time:
+    #     nextTeam_datetime += datetime.timedelta(days=1)
 
-    next_updateteam_mjob = (nextTeam_datetime - datetime.datetime.now()).total_seconds()
-    teamUpdate_set = Job(teamUpdateJob, int(Config.get('Settings', 'Update_Team')))
-    logger.info("Seconds to get Excel List:" + str(next_updateteam_mjob))
-    j.put(teamUpdate_set, next_t=next_updateteam_mjob)
+    # next_updateteam_mjob = (nextTeam_datetime - datetime.datetime.now()).total_seconds()
+    # teamUpdate_set = Job(teamUpdateJob, int(Config.get('Settings', 'Update_Team')))
+    # logger.info("Seconds to get Excel List:" + str(next_updateteam_mjob))
+    # j.put(teamUpdate_set, next_t=next_updateteam_mjob)
+    j.run_daily(teamUpdateJob, teamupdate_time)
     # j.put(teamUpdate_set, next_t=0.0) # debug use
 
     # 4-Set Check results
     checkresults_time = datetime.datetime.strptime(Config.get('Settings', 'CheckResultsTime'), '%H:%M').time()
-    nextcheckresults_datetime = datetime.datetime.combine(datetime.date.today(), checkresults_time)
+    # nextcheckresults_datetime = datetime.datetime.combine(datetime.date.today(), checkresults_time)
 
-    # if time passed, then do tomorrow
-    if datetime.datetime.now().time() > nextcheckresults_datetime.time():
-        nextcheckresults_datetime += datetime.timedelta(days=1)
+    # # if time passed, then do tomorrow
+    # if datetime.datetime.now().time() > nextcheckresults_datetime.time():
+    #     nextcheckresults_datetime += datetime.timedelta(days=1)
 
-    next_checkresults_mjob = (nextcheckresults_datetime - datetime.datetime.now()).total_seconds()
-    teamUpdate_set = Job(checkresultsJob, int(Config.get('Settings', 'CheckResults')))
-    logger.info("Seconds to get Excel List:" + str(next_checkresults_mjob))
-    # j.put(teamUpdate_set, next_t=next_checkresults_mjob)
-    j.put(teamUpdate_set, next_t=0.0) # debug use
+    # next_checkresults_mjob = (nextcheckresults_datetime - datetime.datetime.now()).total_seconds()
+    # checkresults_set = Job(checkresultsJob, int(Config.get('Settings', 'CheckResults')))
+    # logger.info("Seconds to check results:" + str(next_checkresults_mjob))
+    # j.put(checkresults_set, next_t=next_checkresults_mjob)
+    j.run_daily(checkresultsJob, checkresults_time)
+    # j.put(checkresults_set, next_t=0.0) # debug use
 
     # Start the Bot
     updater.start_polling()

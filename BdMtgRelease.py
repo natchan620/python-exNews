@@ -44,7 +44,7 @@ def BoardMeetingCheck():
     subscribeList = db.search(Query().subscribe == True)
     for user in subscribeList:
         df = TeamDF[(TeamDF['team'] == int(user['teamID']))]
-        # df = TeamDF[(TeamDF['team'] == 21)] #debug
+        # df = TeamDF[(TeamDF['team'] == 10)] #debug
         stocklist = []
         for index, row in df.iterrows():
             stocklist.append(str(row['code']).zfill(5))
@@ -52,11 +52,11 @@ def BoardMeetingCheck():
         newsDataSorted = newsData[(newsData["stockcode"].isin(stocklist))]
         push_msg = ["Results due for Team " + str(user['teamID'])]
         for index, row in newsDataSorted.iterrows():
-            push_msg.append("\n<b>" +  datetime.strftime(row['BM_Date'], '%d/%m/%Y') + "</b>" + row['stockcode'] + " " + row['stockname'])
+            push_msg.append("\n<b>" +  datetime.strftime(row['BM_Date'], '%d/%m/%Y') + " " + row['stockcode'] + " " + row['stockname'] + "</b>")
             # search released
             SearchMatch = ExNewsDataResults[ExNewsDataResults['stockcode']  == row['stockcode']]
             if SearchMatch.size > 0:
-                push_msg.append("\n<b>" + SearchMatch['stockcode'].iloc[0] + " " + SearchMatch['stockname'].iloc[0] + "\n</b><a href=\"" + SearchMatch['docurl'].iloc[0] + "\">" + SearchMatch['document'].iloc[0] + "</a>")
+                push_msg.append("\n<a href=\"" + SearchMatch['docurl'].iloc[0] + "\">" + SearchMatch['document'].iloc[0] + "</a>")
             else:
                 push_msg.append("\n<i>(not yet published)</i>")
             #search qualified
@@ -92,8 +92,8 @@ def exScrapeResults():
         'docurl': []
     }
     urls = [
-    'http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM',
-    'http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today.htm']
+    'http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_SEVEN.HTM',
+    'http://www.hkexnews.hk/listedco/listconews/gemindex/GEM_LISTEDCO_DATETIME_SEVEN.HTM']
     # urls = [
     # 'http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_SEVEN.HTM',
     # 'http://www.hkexnews.hk/listedco/listconews/gemindex/GEM_LISTEDCO_DATETIME_SEVEN.HTM'] #debug
