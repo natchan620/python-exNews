@@ -1,8 +1,8 @@
-python-telegram-bot
+python-telegram-bot>=10.1.0
 beautifulsoup4
 requests
 pandas
-lxml
+lxml==4.1.1
 xlrd
 CacheControl
 tinydb

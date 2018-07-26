@@ -25,7 +25,8 @@ def initialise():
 
 def addUser(chatIDno, teamIDno):
     if len(db.search((Query().chatID == chatIDno) & (Query().teamID == teamIDno))) > 0:
-        db.update({'subscribe': True}, ((Query().chatID == chatIDno) & (Query().teamID == teamIDno)))
+        db.update({'subscribe': True}, ((Query().chatID == chatIDno)
+                                        & (Query().teamID == teamIDno)))
     else:
         lastDocID = 2809759
         if len(db) > 0:
@@ -46,10 +47,11 @@ def removeUser(chatIDno):
 
 def exScrape():
     # Enable logging
-    logging.basicConfig(filename='files/logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(filename='files/logfile.log',
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
 
-    # initialise    
+    # initialise
     data = {
         'docID': [],
         'time': [],
@@ -61,10 +63,10 @@ def exScrape():
     }
     messagelist = []
     urls = [
-    'http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM',
-    'http://www.hkexnews.hk/listedco/listconews/mainindex/sehk_listedco_datetime_today_c.htm',
-    'http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today.htm',
-    'http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today_c.htm']
+        'http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM',
+        'http://www.hkexnews.hk/listedco/listconews/mainindex/sehk_listedco_datetime_today_c.htm',
+        'http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today.htm',
+        'http://www.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today_c.htm']
 
     # load html
     try:
@@ -78,7 +80,8 @@ def exScrape():
             currTime = re.search(r'Current Date Time: ([0-9]*)', html).group(1)
             logger.info("Updated: " + currTime)
 
-            comments = soup.find_all(text=lambda text: isinstance(text, Comment))
+            comments = soup.find_all(
+                text=lambda text: isinstance(text, Comment))
             rows = soup.find_all('tr', {'class': re.compile('row*')})
 
             for comment in comments:
@@ -93,21 +96,22 @@ def exScrape():
                 data['stockname'].append(cols[2].get_text())
                 data['headline'].append(cols[3].contents[0].contents[0])
                 data['document'].append(cols[3].contents[1].contents[0])
-                data['docurl'].append("http://www.hkexnews.hk" + cols[3].contents[1].attrs["href"])
+                data['docurl'].append(
+                    "http://www.hkexnews.hk" + cols[3].contents[1].attrs["href"])
 
         newsData = pd.DataFrame(data)
-        newsData = newsData[['docID', 'time', 'stockcode', 'stockname', 'headline', 'document', 'docurl']]
+        newsData = newsData[['docID', 'time', 'stockcode',
+                             'stockname', 'headline', 'document', 'docurl']]
 
         # duplicate row if more than one code
         newsDataDuplicate = newsData[newsData['stockcode'].str.len() > 5]
         for index, row in newsDataDuplicate.iterrows():
             stockcodes = re.findall('.....', row['stockcode'])
             for stockno in stockcodes:
-                newsData = newsData.append({'docID': row['docID'],
-                    'time': row['time'], 'stockcode': stockno,
-                    'stockname': row['stockname'],
-                    'headline': row['headline'], 'document': row['document'],
-                    'docurl': row['docurl']}, ignore_index=True)
+                newsData = newsData.append({'docID': row['docID'], 'time': row['time'], 'stockcode': stockno,
+                                            'stockname': row['stockname'],
+                                            'headline': row['headline'], 'document': row['document'],
+                                            'docurl': row['docurl']}, ignore_index=True)
 
         # sortdata
         newsData = newsData.sort_values(['docID'], ascending=True)
@@ -120,18 +124,20 @@ def exScrape():
             for index, row in df.iterrows():
                 stocklist.append(str(row['code']).zfill(5))
 
-            newsDataSorted = newsData[(newsData["docID"] > user['lastDocID']) & (newsData["stockcode"].isin(stocklist))]
+            newsDataSorted = newsData[(newsData["docID"] > user['lastDocID']) & (
+                newsData["stockcode"].isin(stocklist))]
             for index, row in newsDataSorted.iterrows():
-                messagelist.append([user['chatID'], "Team " + str(user['teamID']) + " " + row['time'] + " #" + str(row['docID']) +
-                    "\n<b>" + row['stockcode'] + " " + row['stockname'] +
-                    "</b>\n" + row['headline'] + "\n<a href=\"" + row['docurl'] + "\">" + row['document'] + "</a>"])
+                messagelist.append([user['chatID'], "Team " + str(user['teamID']) + " " + row['time'] + " #" + str(row['docID']) + "\n<b>" + row['stockcode'] + " " + row['stockname'] +
+                                    "</b>\n" + row['headline'] + "\n<a href=\"" + row['docurl'] + "\">" + row['document'] + "</a>"])
 
             # update next minID to list & save session
-            db.update({'lastDocID': int(newsData['docID'].iloc[-1])}, Query().chatID == user['chatID'])
+            db.update({'lastDocID': int(
+                newsData['docID'].iloc[-1])}, Query().chatID == user['chatID'])
 
     except (IndexError, ValueError):
         subscribeList = db.search(Query().subscribe == True)
         for user in subscribeList:
-            messagelist.append([user['chatID'], "Error, will try again later."])
+            messagelist.append(
+                [user['chatID'], "Error, will try again later."])
 
     return messagelist

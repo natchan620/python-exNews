@@ -1,4 +1,4 @@
-#coding:utf-8
+# coding:utf-8
 from telegram.ext import Updater, CommandHandler, Job
 from tinydb import TinyDB, Query
 import exScrape
@@ -14,31 +14,32 @@ import pytz
 # telegram
 def AboutMe(bot, update):
     update.message.reply_text("ExNews Push build 20180516" +
-                                "\n" +
-                                "\n" + "Fuction: " +
-                                "\n" + "- Update ex news website every 90 seconds" +
-                                "\n" + "- Check results release 11:10 PM every day" +
-                                "\n" + "- Update board meeting dates (MB & GEM) 11:20 PM every day" +
-                                "\n" + "- Update team Excel around 11:30 PM every day" +
-                                "\n" + 
-                                "\n" + "Change log:" +
-                                "\n" + "- 20170516: Auto update team Excel" +
-                                "\n" + "- 20170516: Added board meeting dates" +
-                                "\n" + "- 20170518: Support multiple team subscription" +
-                                "\n" + "- 20170522: Added statistics" +
-                                "\n" + "- 20170814: Fix meeting date error" +
-                                "\n" + "- 20171002: Fix phrase Excel error" +
-                                "\n" + "- 20171231: Fix user list error & message error" +
-                                "\n" + "- 20180103: Fix message cannot sent to all users" +
-                                "\n" + "- 20180215: Add function to check results released" +
-                                "\n" + "- 20180518: Fix Telegram for Python update" +
-                                "\n" +
-                                "\n" + "Usage: " +
-                                "\n" + "- Start subscription: /start <teamID> (eg: /start 10)" +
-                                "\n" + "- Add one more team subscription: /start <teamID> (eg: /start 20)" +
-                                "\n" + "- Stop all team subscription: /stop" +
-                                "\n" +
-                                "\n" + "Enjoy!")
+                              "\n" +
+                              "\n" + "Fuction: " +
+                              "\n" + "- Update ex news website every 90 seconds" +
+                              "\n" + "- Check results release 11:10 PM every day" +
+                              "\n" + "- Update board meeting dates (MB & GEM) 11:20 PM every day" +
+                              "\n" + "- Update team Excel around 11:30 PM every day" +
+                              "\n" +
+                              "\n" + "Change log:" +
+                              "\n" + "- 20170516: Auto update team Excel" +
+                              "\n" + "- 20170516: Added board meeting dates" +
+                              "\n" + "- 20170518: Support multiple team subscription" +
+                              "\n" + "- 20170522: Added statistics" +
+                              "\n" + "- 20170814: Fix meeting date error" +
+                              "\n" + "- 20171002: Fix phrase Excel error" +
+                              "\n" + "- 20171231: Fix user list error & message error" +
+                              "\n" + "- 20180103: Fix message cannot sent to all users" +
+                              "\n" + "- 20180215: Add function to check results released" +
+                              "\n" + "- 20180518: Fix Telegram for Python update" +
+                              "\n" + "- 20180720: Fix user list" +
+                              "\n" +
+                              "\n" + "Usage: " +
+                              "\n" + "- Start subscription: /start <teamID> (eg: /start 10)" +
+                              "\n" + "- Add one more team subscription: /start <teamID> (eg: /start 20)" +
+                              "\n" + "- Stop all team subscription: /stop" +
+                              "\n" +
+                              "\n" + "Enjoy!")
 
 
 def start(bot, update, args):
@@ -53,14 +54,17 @@ def start(bot, update, args):
             return
         exScrape.addUser(update.message.chat_id, teamID)
 
-        update.message.reply_text("exNews subscription for Team: " + str(teamID) + " set. I will refresh every " + str(due) + " seconds. Send /stop to stop.")
+        update.message.reply_text("exNews subscription for Team: " + str(
+            teamID) + " set. I will refresh every " + str(due) + " seconds. Send /stop to stop.")
 
     except (IndexError, ValueError):
         update.message.reply_text('Usage: /start <teamID> (eg: /start 30)')
 
+
 def alarm(bot, job):
     msgList = exScrape.exScrape()
-    logging.basicConfig(filename='files/logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(filename='files/logfile.log',
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
     for message in msgList:
         try:
@@ -70,17 +74,21 @@ def alarm(bot, job):
                 parse_mode='HTML',
                 disable_web_page_preview=True)
             if(is_ascii(message[1])):
-                logger.info("Pushed ID#" + str(message[0]) + ": " + message[1].replace('\n', ''))
+                logger.info(
+                    "Pushed ID#" + str(message[0]) + ": " + message[1].replace('\n', ''))
 
         except BaseException as e:
             logger.error("Pushed ID#" + str(message[0]) + ": " + str(e))
 
+
 def is_ascii(s):
     return all(ord(c) < 128 for c in s)
 
+
 def meeting(bot, job):
     msgList = BdMtg.BoardMeeting()
-    logging.basicConfig(filename='files/logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(filename='files/logfile.log',
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
     for message in msgList:
         try:
@@ -90,14 +98,17 @@ def meeting(bot, job):
                 parse_mode='HTML',
                 disable_web_page_preview=True)
             if(is_ascii(message[1])):
-                logger.info("Meeting ID#" + str(message[0]) + ": " + message[1].replace('\n', ''))
+                logger.info(
+                    "Meeting ID#" + str(message[0]) + ": " + message[1].replace('\n', ''))
 
         except BaseException as e:
             logger.error("Meeting ID#" + str(message[0]) + ": " + str(e))
 
+
 def checkresultsJob(bot, job):
     msgList = BdMtgRelease.BoardMeetingCheck()
-    logging.basicConfig(filename='files/logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(filename='files/logfile.log',
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
     for message in msgList:
         try:
@@ -107,14 +118,17 @@ def checkresultsJob(bot, job):
                 parse_mode='HTML',
                 disable_web_page_preview=True)
             if(is_ascii(message[1])):
-                logger.info("Results check ID#" + str(message[0]) + ": " + message[1].replace('\n', ''))
+                logger.info("Results check ID#" +
+                            str(message[0]) + ": " + message[1].replace('\n', ''))
 
         except BaseException as e:
             logger.error("Results check ID#" + str(message[0]) + ": " + str(e))
 
+
 def teamUpdateJob(bot, job):
     msgList = teamUpdate.TeamUpdate()
-    logging.basicConfig(filename='files/logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(filename='files/logfile.log',
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
     for message in msgList:
         try:
@@ -124,10 +138,12 @@ def teamUpdateJob(bot, job):
                 parse_mode='HTML',
                 disable_web_page_preview=True)
             if(is_ascii(message[1])):
-                logger.info("Team Excel Update ID#" + str(message[0]) + ": " + message[1].replace('\n', ''))
+                logger.info("Team Excel Update ID#" +
+                            str(message[0]) + ": " + message[1].replace('\n', ''))
 
         except BaseException as e:
-            logger.error("Team Excel Update ID#" + str(message[0]) + ": " + str(e))
+            logger.error("Team Excel Update ID#" +
+                         str(message[0]) + ": " + str(e))
 
 
 def stop(bot, update):
@@ -138,6 +154,7 @@ def stop(bot, update):
     else:
         update.message.reply_text('No current subscription found.')
 
+
 def stat_admin(bot, update):
     # read config
     Config = configparser.ConfigParser()
@@ -147,22 +164,30 @@ def stat_admin(bot, update):
         db = TinyDB('files/db.json')
         subscribeList = db.all()
         for user in subscribeList:
+
+            TelegramChat = bot.getChat(user['chatID'])
+
+            push_msg = "<b>" + str(user['chatID']) + \
+                "\n</b>Team " + str(user['teamID']) + ": " + str(user['subscribe']) + \
+                "\nName: " + str(TelegramChat.first_name) + " " + str(TelegramChat.last_name) + \
+                "\nUsername: " + str(TelegramChat.username) + \
+                "\nTitle: " + str(TelegramChat.title)
+
             bot.sendMessage(
                 chat_id=update.message.chat_id,
-                # text= push_msg,
-                text = "<b>" + str(user['chatID']) +
-                                "\n</b>Team " + str(user['teamID']) + ": " + str(user['subscribe']) +
-                                "\nUsername: " + bot.getChat(user['chatID']).username + bot.getChat(user['chatID']).title +
-                                "\nName: " + bot.getChat(user['chatID']).first_name + " " + bot.getChat(user['chatID']).last_name,
+                text=push_msg,
                 parse_mode='HTML',
                 disable_web_page_preview=True)
     else:
-        update.message.reply_text("Sorry, you're not authorised.")  
+        update.message.reply_text("Sorry, you're not authorised.")
+
 
 def error(bot, update, error):
-    logging.basicConfig(filename='files/logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(filename='files/logfile.log',
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
     logger.warning('Update "%s" caused error "%s"' % (update, error))
+
 
 def main():
     # read config
@@ -170,7 +195,8 @@ def main():
     Config.read("config.ini")
 
     # Enable logging
-    logging.basicConfig(filename='files/logfile.log',format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(filename='files/logfile.log',
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
 
     updater = Updater(Config.get('Telegram', 'token'))
@@ -200,7 +226,8 @@ def main():
     j.run_repeating(alarm, int(Config.get('Settings', 'Due')), first=0.0)
 
     # 2-Set Refresh Meeting
-    meeting_time = datetime.datetime.strptime(Config.get('Settings', 'MeetingTime'), '%H:%M').time()
+    meeting_time = datetime.datetime.strptime(
+        Config.get('Settings', 'MeetingTime'), '%H:%M').time()
     # next_datetime = datetime.datetime.combine(datetime.date.today(), meeting_time)
 
     # # if time passed, then do tomorrow
@@ -215,7 +242,8 @@ def main():
     # j.put(meeting_set, next_t=0.0) # debug use
 
     # 3-Set Refresh Team
-    teamupdate_time = datetime.datetime.strptime(Config.get('Settings', 'Update_TeamTime'), '%H:%M').time()
+    teamupdate_time = datetime.datetime.strptime(
+        Config.get('Settings', 'Update_TeamTime'), '%H:%M').time()
     # nextTeam_datetime = datetime.datetime.combine(datetime.date.today(), teamupdate_time)
 
     # # if time passed, then do tomorrow
@@ -230,7 +258,8 @@ def main():
     # j.put(teamUpdate_set, next_t=0.0) # debug use
 
     # 4-Set Check results
-    checkresults_time = datetime.datetime.strptime(Config.get('Settings', 'CheckResultsTime'), '%H:%M').time()
+    checkresults_time = datetime.datetime.strptime(
+        Config.get('Settings', 'CheckResultsTime'), '%H:%M').time()
     # nextcheckresults_datetime = datetime.datetime.combine(datetime.date.today(), checkresults_time)
 
     # # if time passed, then do tomorrow
