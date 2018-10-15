@@ -13,7 +13,7 @@ import pytz
 
 # telegram
 def AboutMe(bot, update):
-    update.message.reply_text("ExNews Push build 20180516" +
+    update.message.reply_text("ExNews Push build 20181016" +
                               "\n" +
                               "\n" + "Fuction: " +
                               "\n" + "- Update ex news website every 90 seconds" +
@@ -33,6 +33,7 @@ def AboutMe(bot, update):
                               "\n" + "- 20180215: Add function to check results released" +
                               "\n" + "- 20180518: Fix Telegram for Python update" +
                               "\n" + "- 20180720: Fix user list" +
+                              "\n" + "- 20181016: Added board meeting date calculation" +
                               "\n" +
                               "\n" + "Usage: " +
                               "\n" + "- Start subscription: /start <teamID> (eg: /start 10)" +

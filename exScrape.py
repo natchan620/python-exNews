@@ -8,6 +8,7 @@ import pandas as pd
 import logging
 from pathlib import Path
 import BdMtgCal
+import datetime
 
 
 def initialise():
@@ -20,7 +21,7 @@ def initialise():
     db = TinyDB('files/db.json')
     # load stocklist
     global TeamDF
-    TeamDF = pd.read_excel(open('files/listingone.xls', 'rb'), sheetname=0)
+    TeamDF = pd.read_excel(open('files/listingone.xls', 'rb'), sheet_name=0)
     TeamDF.columns = ['code', 'EName', 'CName', 'team']
 
 
@@ -130,18 +131,17 @@ def exScrape():
             for index, row in newsDataSorted.iterrows():
                 messagelist.append([user['chatID'], "Team " + str(user['teamID']) + " " + row['time'] + " #" + str(row['docID']) + "\n<b>" + row['stockcode'] + " " + row['stockname'] +
                                     "</b>\n" + row['headline'] + "\n<a href=\"" + row['docurl'] + "\">" + row['document'] + "</a>"])
-
-            # add notice period calculation for board meeting notice
-            if row['headline'].str.contains('Date of Board Meeting'):
-                try:
-                    # download as "files/TempAnnt.pdf"
-                    BdMtgCal.downloadPDF(row['docurl'])
-                    bm_date, num_bdays = BdMtgCal.calc_noticeperiod(
-                        "files/TempAnnt.pdf")
-                    messagelist.append([user['chatID'], "Board Meeting Date Calcuation (testing) " + "\nBoard meeting date:" +
-                                        datetime.datetime.strftime(bm_date, '%d-%b-%Y') + "\n(" + str(num_bdays) + " clear business days)"])
-                except:
-                    pass
+                            # add notice period calculation for board meeting notice
+                if "Date of Board Meeting" in str(row['headline']):
+                    try:
+                        # download as "files/TempAnnt.pdf"
+                        BdMtgCal.downloadPDF(row['docurl'])
+                        bm_date, num_bdays = BdMtgCal.calc_noticeperiod(
+                            "files/TempAnnt.pdf")
+                        messagelist.append([user['chatID'], "Board Meeting Date Calcuation (testing) " + "\nBoard meeting date: " +
+                                            datetime.datetime.strftime(bm_date, '%d-%b-%Y') + "\n(" + str(num_bdays) + " clear business days)"])
+                    except:
+                        pass
 
             # update next minID to list & save session
             db.update({'lastDocID': int(

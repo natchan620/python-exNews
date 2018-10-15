@@ -6,3 +6,6 @@ lxml==4.1.1
 xlrd
 CacheControl
 tinydb
+pdfminer.six
+datefinder
+pytz
