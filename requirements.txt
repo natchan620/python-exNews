@@ -8,4 +8,4 @@ CacheControl
 tinydb
 pdfminer.six
 datefinder
-pytz
+emoji

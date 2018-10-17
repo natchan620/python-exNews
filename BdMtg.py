@@ -25,10 +25,11 @@ def initialise():
 
 def BoardMeeting():
     # Enable logging
-    logging.basicConfig(filename='files/logfile.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(filename='files/logfile.log',
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     logger = logging.getLogger(__name__)
 
-    # initialise    
+    # initialise
     data = {
         'BM_Date': [],
         'stockname': [],
@@ -38,8 +39,8 @@ def BoardMeeting():
     }
     messagelist = []
     urls = [
-    'http://www.hkexnews.hk/reports/bmn/ebmn.htm',
-    'http://www.hkgem.com/prices/diaries/diaries2/ebmngem.htm']
+        'http://www.hkexnews.hk/reports/bmn/ebmn.htm',
+        'http://www.hkgem.com/prices/diaries/diaries2/ebmngem.htm']
 
     # load html
 
@@ -70,8 +71,10 @@ def BoardMeeting():
             data['period'].append(cols[5].get_text())
 
     newsData = pd.DataFrame(data)
-    newsData = newsData[['BM_Date', 'stockname', 'stockcode', 'purpose', 'period']]
-    newsData['BM_Date'] = newsData['BM_Date'].apply(lambda x: datetime.datetime.strptime(x, '%d/%m/%Y'))
+    newsData = newsData[['BM_Date', 'stockname',
+                         'stockcode', 'purpose', 'period']]
+    newsData['BM_Date'] = newsData['BM_Date'].apply(
+        lambda x: datetime.datetime.strptime(x, '%d/%m/%Y'))
     newsData = newsData.sort_values(['BM_Date'], ascending=True)
 
     # Start loop for each user
@@ -83,13 +86,14 @@ def BoardMeeting():
             stocklist.append(str(row['code']))
 
         newsDataSorted = newsData[(newsData["stockcode"].isin(stocklist))]
-        push_msg = ["Coming Board Meeting Dates for Team " + str(user['teamID'])]
+        push_msg = ["Coming Board Meeting Dates for Team " +
+                    str(user['teamID'])]
         for index, row in newsDataSorted.iterrows():
-            push_msg.append("\n<b>" + datetime.datetime.strftime(row['BM_Date'], '%d/%m/%Y') +
+            push_msg.append("\n:spiral_calendar:<b>" + datetime.datetime.strftime(row['BM_Date'], '%d/%m/%Y') +
                             "\n</b>" + row['stockcode'] + " " + row['stockname'] +
                             "\n" + row['purpose'] +
                             "\n" + row['period'])
-        
+
         if len(push_msg) < 2:
             push_msg.append("\n<i>(no results coming)</i>")
 

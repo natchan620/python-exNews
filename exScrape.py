@@ -93,7 +93,8 @@ def exScrape():
 
             for row in rows:
                 cols = row.find_all('td')
-                data['time'].append(cols[0].get_text())
+                data['time'].append(cols[0].get_text()[
+                                    :10] + " " + cols[0].get_text()[-5:])
                 data['stockcode'].append(cols[1].get_text())
                 data['stockname'].append(cols[2].get_text())
                 data['headline'].append(cols[3].contents[0].contents[0])
@@ -129,17 +130,22 @@ def exScrape():
             newsDataSorted = newsData[(newsData["docID"] > user['lastDocID']) & (
                 newsData["stockcode"].isin(stocklist))]
             for index, row in newsDataSorted.iterrows():
-                messagelist.append([user['chatID'], "Team " + str(user['teamID']) + " " + row['time'] + " #" + str(row['docID']) + "\n<b>" + row['stockcode'] + " " + row['stockname'] +
+                messagelist.append([user['chatID'], ":newspaper: Team " + str(user['teamID']) + " " + row['time'] + " #" + str(row['docID']) + "\n<b>" + row['stockcode'] + " " + row['stockname'] +
                                     "</b>\n" + row['headline'] + "\n<a href=\"" + row['docurl'] + "\">" + row['document'] + "</a>"])
-                            # add notice period calculation for board meeting notice
+                # add notice period calculation for board meeting notice
                 if "Date of Board Meeting" in str(row['headline']):
                     try:
                         # download as "files/TempAnnt.pdf"
                         BdMtgCal.downloadPDF(row['docurl'])
                         bm_date, num_bdays = BdMtgCal.calc_noticeperiod(
-                            "files/TempAnnt.pdf")
-                        messagelist.append([user['chatID'], "Board Meeting Date Calcuation (testing) " + "\nBoard meeting date: " +
-                                            datetime.datetime.strftime(bm_date, '%d-%b-%Y') + "\n(" + str(num_bdays) + " clear business days)"])
+                            row['time'], "files/TempAnnt.pdf")
+                        if num_bdays >= 7:
+                            messagelist.append([user['chatID'], "Board Meeting Date Calcuation (testing) " + "\n:tear-off_calendar: Board meeting date: " +
+                                                datetime.datetime.strftime(bm_date, '%d-%b-%Y') + "\n:heavy_large_circle: (" + str(num_bdays) + " clear business days)"])
+                        else:
+                            messagelist.append([user['chatID'], "Board Meeting Date Calcuation (testing) " + "\n:tear-off_calendar: Board meeting date: " +
+                                                datetime.datetime.strftime(bm_date, '%d-%b-%Y') + "\n:cross_mark:<b> (" + str(num_bdays) + " clear business days)</b>    "])
+
                     except:
                         pass
 

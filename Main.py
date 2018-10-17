@@ -1,6 +1,7 @@
 # coding:utf-8
 from telegram.ext import Updater, CommandHandler, Job
 from tinydb import TinyDB, Query
+from emoji import emojize
 import exScrape
 import BdMtg
 import BdMtgRelease
@@ -8,10 +9,10 @@ import teamUpdate
 import logging
 import configparser
 import datetime
-import pytz
-
 
 # telegram
+
+
 def AboutMe(bot, update):
     update.message.reply_text("ExNews Push build 20181016" +
                               "\n" +
@@ -34,6 +35,7 @@ def AboutMe(bot, update):
                               "\n" + "- 20180518: Fix Telegram for Python update" +
                               "\n" + "- 20180720: Fix user list" +
                               "\n" + "- 20181016: Added board meeting date calculation" +
+                              "\n" + "- 20181017: Added emoji" +
                               "\n" +
                               "\n" + "Usage: " +
                               "\n" + "- Start subscription: /start <teamID> (eg: /start 10)" +
@@ -71,7 +73,7 @@ def alarm(bot, job):
         try:
             bot.sendMessage(
                 chat_id=message[0],
-                text=message[1],
+                text=emojize(message[1], use_aliases=True),
                 parse_mode='HTML',
                 disable_web_page_preview=True)
             if(is_ascii(message[1])):
@@ -95,7 +97,7 @@ def meeting(bot, job):
         try:
             bot.sendMessage(
                 chat_id=message[0],
-                text=message[1],
+                text=emojize(message[1], use_aliases=True),
                 parse_mode='HTML',
                 disable_web_page_preview=True)
             if(is_ascii(message[1])):
@@ -115,7 +117,7 @@ def checkresultsJob(bot, job):
         try:
             bot.sendMessage(
                 chat_id=message[0],
-                text=message[1],
+                text=emojize(message[1], use_aliases=True),
                 parse_mode='HTML',
                 disable_web_page_preview=True)
             if(is_ascii(message[1])):
@@ -135,7 +137,7 @@ def teamUpdateJob(bot, job):
         try:
             bot.sendMessage(
                 chat_id=message[0],
-                text=message[1],
+                text=emojize(message[1], use_aliases=True),
                 parse_mode='HTML',
                 disable_web_page_preview=True)
             if(is_ascii(message[1])):
@@ -240,7 +242,7 @@ def main():
     # logger.info("Seconds to get Board Meeting List:" + str(next_t_mjob))
     # j.put(meeting_set, next_t=next_t_mjob)
     j.run_daily(meeting, meeting_time)
-    # j.put(meeting_set, next_t=0.0) # debug use
+    # j.run_once(meeting, 0)  # debug use
 
     # 3-Set Refresh Team
     teamupdate_time = datetime.datetime.strptime(
@@ -256,7 +258,7 @@ def main():
     # logger.info("Seconds to get Excel List:" + str(next_updateteam_mjob))
     # j.put(teamUpdate_set, next_t=next_updateteam_mjob)
     j.run_daily(teamUpdateJob, teamupdate_time)
-    # j.put(teamUpdate_set, next_t=0.0) # debug use
+    # j.run_once(teamUpdateJob, 0)  # debug use
 
     # 4-Set Check results
     checkresults_time = datetime.datetime.strptime(
@@ -272,7 +274,7 @@ def main():
     # logger.info("Seconds to check results:" + str(next_checkresults_mjob))
     # j.put(checkresults_set, next_t=next_checkresults_mjob)
     j.run_daily(checkresultsJob, checkresults_time)
-    # j.put(checkresults_set, next_t=0.0) # debug use
+    # j.run_once(checkresultsJob, 0)  # debug use
 
     # Start the Bot
     updater.start_polling()

@@ -7,7 +7,6 @@ import datefinder
 import pandas as pd
 from pandas.tseries.offsets import CustomBusinessDay
 import datetime
-import pytz
 import requests
 import numpy as np
 
@@ -38,14 +37,15 @@ def convert_pdf_to_txt(path):
     return str
 
 
-def calc_noticeperiod(filename):
+def calc_noticeperiod(time, filename):
     pdf_text = convert_pdf_to_txt(filename).replace(
         '\n', ' ').replace('\r', '')
     # print(pdf_text)
     matches = datefinder.find_dates(pdf_text)
     bm_date = max(matches)
-    now_date = datetime.datetime.now(
-        pytz.timezone('Asia/Hong_Kong')).replace(tzinfo=None)
+    # now_date = datetime.datetime.now(
+    #    pytz.timezone('Asia/Hong_Kong')).replace(tzinfo=None)
+    now_date = datetime.datetime.strptime(time, '%d/%m/%Y %H:%M').date()
     # Count number of working days
     weekmask = 'Mon Tue Wed Thu Fri'
     # holidays = [datetime.datetime(2011, 1, 5), datetime.datetime(2011, 3, 14)]  # to read holidays
@@ -69,5 +69,6 @@ def downloadPDF(URL):
 if __name__ == '__main__':
     downloadPDF(
         "http://www.hkexnews.hk/listedco/listconews/sehk/2018/1015/LTN20181015342.pdf")
-    bm_date, num_bdays = calc_noticeperiod("files/TempAnnt.pdf")
+    bm_date, num_bdays = calc_noticeperiod(
+        "16/10/2018 21:18", "files/TempAnnt.pdf")
     print(str(bm_date) + " " + str(num_bdays))

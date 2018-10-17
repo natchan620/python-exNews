@@ -63,18 +63,19 @@ def BoardMeetingCheck():
                                             == row['stockcode']]
             if SearchMatch.size > 0:
                 push_msg.append(
-                    "\n<a href=\"" + SearchMatch['docurl'].iloc[0] + "\">" + SearchMatch['document'].iloc[0] + "</a>")
+                    "\n:bar_chart:<a href=\"" + SearchMatch['docurl'].iloc[0] + "\">" + SearchMatch['document'].iloc[0] + "</a>")
             else:
-                push_msg.append("\n<i>(not yet published)</i>")
+                push_msg.append("\n:question_mark:<i>(not yet published)</i>")
             # search qualified
             SearchMatch = ExNewsDataQualify[ExNewsDataQualify['stockcode']
                                             == row['stockcode']]
             if SearchMatch.size > 0:
                 push_msg.append(
-                    "\n<b>(Qualified and/or Modified Audit Report)</b>")
+                    "\n:warning:<b>(Qualified and/or Modified Audit Report)</b>")
 
         if len(push_msg) < 2:
-            push_msg.append("\n<i>(no results due)</i>")
+            push_msg.append(
+                "\n:Japanese_free_of_charge_button:<i>(no results due)</i>")
 
         messagelist.append([user['chatID'], ''.join(push_msg)])
 
