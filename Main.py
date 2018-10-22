@@ -14,7 +14,7 @@ import datetime
 
 
 def AboutMe(bot, update):
-    update.message.reply_text("ExNews Push build 20181016" +
+    update.message.reply_text("ExNews Push build 20181022" +
                               "\n" +
                               "\n" + "Fuction: " +
                               "\n" + "- Update ex news website every 90 seconds" +
@@ -36,6 +36,7 @@ def AboutMe(bot, update):
                               "\n" + "- 20180720: Fix user list" +
                               "\n" + "- 20181016: Added board meeting date calculation" +
                               "\n" + "- 20181017: Added emoji" +
+                              "\n" + "- 20181022: Fix date calculation for Sunday & holiday announcements" +
                               "\n" +
                               "\n" + "Usage: " +
                               "\n" + "- Start subscription: /start <teamID> (eg: /start 10)" +

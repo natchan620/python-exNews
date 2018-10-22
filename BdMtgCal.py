@@ -11,11 +11,6 @@ import requests
 import numpy as np
 
 
-def getBMDatefromAnnt(URL):
-    downloadPDF(URL)
-    return calc_noticeperiod("files/TempAnnt.pdf")
-
-
 def convert_pdf_to_txt(path):
     rsrcmgr = PDFResourceManager()
     retstr = StringIO()
@@ -55,6 +50,8 @@ def calc_noticeperiod(time, filename):
         date.decode('UTF-8'), '%Y-%m-%d').date() for date in dates]
     num_bdays = len(pd.bdate_range(now_date, bm_date, freq='C',
                                    weekmask=weekmask, holidays=holidays)) - 2
+    if now_date in holidays or now_date.weekday() > 5:
+        num_bdays = num_bdays + 1
     return bm_date, num_bdays
 
 
@@ -68,7 +65,7 @@ def downloadPDF(URL):
 
 if __name__ == '__main__':
     downloadPDF(
-        "http://www.hkexnews.hk/listedco/listconews/sehk/2018/1015/LTN20181015342.pdf")
+        "http://www.hkexnews.hk/listedco/listconews/SEHK/2018/1014/LTN20181014009.pdf")
     bm_date, num_bdays = calc_noticeperiod(
-        "16/10/2018 21:18", "files/TempAnnt.pdf")
+        "14/10/2018 18:08", "files/TempAnnt.pdf")
     print(str(bm_date) + " " + str(num_bdays))
