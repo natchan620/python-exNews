@@ -3,12 +3,14 @@ from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from io import StringIO
-import datefinder
+# import datefinder
 import pandas as pd
-from pandas.tseries.offsets import CustomBusinessDay
+# from pandas.tseries.offsets import CustomBusinessDay
 import datetime
 import requests
 import numpy as np
+import re
+import dateparser
 
 
 def convert_pdf_to_txt(path):
@@ -34,10 +36,17 @@ def convert_pdf_to_txt(path):
 
 def calc_noticeperiod(time, filename):
     pdf_text = convert_pdf_to_txt(filename).replace(
-        '\n', ' ').replace('\r', '')
+        '\n', ' ').replace('\r', '').replace(',', '').replace('.', '')
     # print(pdf_text)
-    matches = datefinder.find_dates(pdf_text)
-    bm_date = max(matches)
+    matches = re.findall(
+        r'(\d{1,2}[\/ ]*(\d{2}|January|Jan|February|Feb|March|Mar|April|Apr|May|May|June|Jun|July|Jul|August|Aug|September|Sep|October|Oct|November|Nov|December|Dec)[\/ ]*\d{2,4})', pdf_text)
+
+    # matches = datefinder.find_dates(pdf_text, source=True, strict=True)
+    date_list = []
+    for match in matches:
+        print(match)
+        date_list.append(dateparser.parse(match[0]))
+    bm_date = max(date_list)
     # now_date = datetime.datetime.now(
     #    pytz.timezone('Asia/Hong_Kong')).replace(tzinfo=None)
     now_date = datetime.datetime.strptime(time, '%d/%m/%Y %H:%M').date()
@@ -65,7 +74,7 @@ def downloadPDF(URL):
 
 if __name__ == '__main__':
     downloadPDF(
-        "http://www.hkexnews.hk/listedco/listconews/SEHK/2018/1014/LTN20181014009.pdf")
+        "http://www3.hkexnews.hk/listedco/listconews/GEM/2018/1031/GLN20181031135.pdf")
     bm_date, num_bdays = calc_noticeperiod(
-        "14/10/2018 18:08", "files/TempAnnt.pdf")
+        "31/10/2018 17:43", "files/TempAnnt.pdf")
     print(str(bm_date) + " " + str(num_bdays))

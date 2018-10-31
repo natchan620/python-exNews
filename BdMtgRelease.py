@@ -104,8 +104,8 @@ def exScrapeResults():
         'docurl': []
     }
     urls = [
-        'http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_SEVEN.HTM',
-        'http://www.hkexnews.hk/listedco/listconews/gemindex/GEM_LISTEDCO_DATETIME_SEVEN.HTM']
+        'http://www3.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_SEVEN.HTM',
+        'http://www3.hkexnews.hk/listedco/listconews/gemindex/GEM_LISTEDCO_DATETIME_SEVEN.HTM']
     # urls = [
     # 'http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_SEVEN.HTM',
     # 'http://www.hkexnews.hk/listedco/listconews/gemindex/GEM_LISTEDCO_DATETIME_SEVEN.HTM'] #debug
@@ -137,7 +137,7 @@ def exScrapeResults():
             data['headline'].append(cols[3].contents[0].contents[0])
             data['document'].append(cols[3].contents[1].contents[0])
             data['docurl'].append(
-                "http://www.hkexnews.hk" + cols[3].contents[1].attrs["href"])
+                "http://www3.hkexnews.hk" + cols[3].contents[1].attrs["href"])
 
     newsData = pd.DataFrame(data)
     newsData = newsData[['docID', 'time', 'stockcode',

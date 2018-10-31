@@ -7,5 +7,5 @@ xlrd
 CacheControl
 tinydb
 pdfminer.six
-datefinder
+dateparser
 emoji
