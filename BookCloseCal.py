@@ -22,7 +22,7 @@ def convert_pdf_to_txt(path):
     fp = open(path, 'rb')
     interpreter = PDFPageInterpreter(rsrcmgr, device)
     password = ""
-    maxpages = 0
+    maxpages = 10
     caching = True
     pagenos = set()
     for page in PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password, caching=caching, check_extractable=True):
@@ -80,8 +80,8 @@ def downloadPDF(URL):
 
 if __name__ == '__main__':
     downloadPDF(
-        "http://www3.hkexnews.hk/listedco/listconews/SEHK/2018/1228/LTN201812281230.pdf")
+        "http://www3.hkexnews.hk/listedco/listconews/SEHK/2019/0321/LTN20190321577.pdf")
     bc_start_date, bc_end_date, num_bdays = calc_noticeperiod(
-        "28/12/2018 20:39", "files/TempAnnt.pdf")
+        "21/03/2019 18:24", "files/TempAnnt.pdf")
     print(str(bc_start_date) + " to " + str(bc_end_date) +
           " (" + str(num_bdays) + " days notice)")

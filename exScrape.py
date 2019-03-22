@@ -135,27 +135,27 @@ def exScrape():
                                     "</b>\n" + row['headline'] + "\n<a href=\"" + row['docurl'] + "\">" + row['document'] + "</a>"])
 
                 # add notice period calculation for board meeting notice
-                if "Closure of Books or Change of Book Closure Period" in str(row['headline']):
-                    try:
-                        # download as "files/TempAnnt.pdf"
-                        BookCloseCal.downloadPDF(row['docurl'])
-                        bc_start_date, bc_end_date, num_bdays = BookCloseCal.calc_noticeperiod(
-                            row['time'], "files/TempAnnt.pdf")
-                        if "Rights Issue" in str(row['headline']) and num_bdays >= 6:
-                            messagelist.append([user['chatID'], "Book Close Date Calcuation (Rights Issue) " + "\n:tear-off_calendar: From: " +
-                                                datetime.datetime.strftime(bc_start_date, '%d-%b-%Y') + "\n:spiral_calendar_pad: To: " +
-                                                datetime.datetime.strftime(bc_end_date, '%d-%b-%Y') + "\n:heavy_large_circle: (" + str(num_bdays) + " business days)"])
-                        elif num_bdays >= 10:
-                            messagelist.append([user['chatID'], "Book Close Calcuation (testing) " + "\n:tear-off_calendar: From: " +
-                                                datetime.datetime.strftime(bc_start_date, '%d-%b-%Y') + "\n:spiral_calendar_pad: To: " +
-                                                datetime.datetime.strftime(bc_end_date, '%d-%b-%Y') + "\n:heavy_large_circle: (" + str(num_bdays) + " business days)"])
-                        else:
-                            messagelist.append([user['chatID'], "Book Close Calcuation (testing) " + "\n:tear-off_calendar: From: " +
-                                                datetime.datetime.strftime(bc_start_date, '%d-%b-%Y') + "\n:spiral_calendar_pad: To: " +
-                                                datetime.datetime.strftime(bc_end_date, '%d-%b-%Y') + "\n:cross_mark:<b> (" + str(num_bdays) + " business days)</b>    "])
+                # if "Closure of Books or Change of Book Closure Period" in str(row['headline']):
+                #     try:
+                #         # download as "files/TempAnnt.pdf"
+                #         BookCloseCal.downloadPDF(row['docurl'])
+                #         bc_start_date, bc_end_date, num_bdays = BookCloseCal.calc_noticeperiod(
+                #             row['time'], "files/TempAnnt.pdf")
+                #         if "Rights Issue" in str(row['headline']) and num_bdays >= 6:
+                #             messagelist.append([user['chatID'], "Book Close Date Calcuation (Rights Issue) " + "\n:tear-off_calendar: From: " +
+                #                                 datetime.datetime.strftime(bc_start_date, '%d-%b-%Y') + "\n:spiral_calendar_pad: To: " +
+                #                                 datetime.datetime.strftime(bc_end_date, '%d-%b-%Y') + "\n:heavy_large_circle: (" + str(num_bdays) + " business days)"])
+                #         elif num_bdays >= 10:
+                #             messagelist.append([user['chatID'], "Book Close Calcuation (testing) " + "\n:tear-off_calendar: From: " +
+                #                                 datetime.datetime.strftime(bc_start_date, '%d-%b-%Y') + "\n:spiral_calendar_pad: To: " +
+                #                                 datetime.datetime.strftime(bc_end_date, '%d-%b-%Y') + "\n:heavy_large_circle: (" + str(num_bdays) + " business days)"])
+                #         else:
+                #             messagelist.append([user['chatID'], "Book Close Calcuation (testing) " + "\n:tear-off_calendar: From: " +
+                #                                 datetime.datetime.strftime(bc_start_date, '%d-%b-%Y') + "\n:spiral_calendar_pad: To: " +
+                #                                 datetime.datetime.strftime(bc_end_date, '%d-%b-%Y') + "\n:cross_mark:<b> (" + str(num_bdays) + " business days)</b>    "])
 
-                    except:
-                        pass
+                #     except:
+                #         pass
 
                 # add notice period calculation for bookclosure period
                 if "Date of Board Meeting" in str(row['headline']):
