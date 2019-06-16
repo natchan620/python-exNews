@@ -14,7 +14,7 @@ import datetime
 
 
 def AboutMe(bot, update):
-    update.message.reply_text("ExNews Push build 20190321" +
+    update.message.reply_text("ExNews Push build 20190616" +
                               "\n" +
                               "\n" + "Fuction: " +
                               "\n" + "- Update ex news website every 90 seconds" +
@@ -41,6 +41,7 @@ def AboutMe(bot, update):
                               "\n" + "- 20181030: Improved regular expression for board meeting date identification" +
                               "\n" + "- 20190108: Added book closure date check" +
                               "\n" + "- 20190321: Disabled closure date check" +
+                              "\n" + "- 20190616: Fixed to read after news website revamp" +
                               "\n" +
                               "\n" + "Usage: " +
                               "\n" + "- Start subscription: /start <teamID> (eg: /start 10)" +

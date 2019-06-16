@@ -10,6 +10,8 @@ from pathlib import Path
 import BdMtgCal
 import BookCloseCal
 import datetime
+import configparser
+import json
 
 
 def initialise():
@@ -66,56 +68,57 @@ def exScrape():
     }
     messagelist = []
     urls = [
-        'http://www3.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_TODAY.HTM',
-        'http://www3.hkexnews.hk/listedco/listconews/mainindex/sehk_listedco_datetime_today_c.htm',
-        'http://www3.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today.htm',
-        'http://www3.hkexnews.hk/listedco/listconews/gemindex/gem_listedco_datetime_today_c.htm']
+        'https://www1.hkexnews.hk/ncms/json/eds/lcisehk1relsde_1.json',
+        'https://www1.hkexnews.hk/ncms/json/eds/lcisehk1relsdc_1.json',
+        'https://www1.hkexnews.hk/ncms/json/eds/lcigem1relsde_1.json',
+        'https://www1.hkexnews.hk/ncms/json/eds/lcigem1relsdc_1.json']
 
-    # load html
+    # load json
     try:
         for url in urls:
             r = cached_sess.get(url)
             r.encoding = 'utf-8'
 
-            html = r.text
-            soup = BeautifulSoup(html, "lxml")
+            newsjson = json.loads(r.text)
 
-            currTime = re.search(r'Current Date Time: ([0-9]*)', html).group(1)
+            maxNumOfFile = newsjson["maxNumOfFile"]
+
+            currTime = newsjson["genDate"]
             logger.info("Updated: " + currTime)
 
-            comments = soup.find_all(
-                text=lambda text: isinstance(text, Comment))
-            rows = soup.find_all('tr', {'class': re.compile('row*')})
+            for news in newsjson["newsInfoLst"]:
+                for stock in news["stock"]:
+                    data['docID'].append(news["newsId"])
+                    data['time'].append(news["relTime"])
+                    data['stockcode'].append(stock["sc"])
+                    data['stockname'].append(stock["sn"])
+                    data['headline'].append(news["lTxt"])
+                    data['document'].append(news["title"])
+                    data['docurl'].append(
+                        "https://www1.hkexnews.hk" + news["webPath"])
 
-            for comment in comments:
-                e = re.match(r'([0-9]*)', comment.string).group(1)
-                if len(e) > 1:
-                    data['docID'].append(int(e))
+            if maxNumOfFile > 1:
+                for i in range(2, maxNumOfFile):
+                    r = cached_sess.get(url.replace(
+                        "_1.json", "_" + str(i) + ".json"))
+                    r.encoding = 'utf-8'
 
-            for row in rows:
-                cols = row.find_all('td')
-                data['time'].append(cols[0].get_text()[
-                                    :10] + " " + cols[0].get_text()[-5:])
-                data['stockcode'].append(cols[1].get_text())
-                data['stockname'].append(cols[2].get_text())
-                data['headline'].append(cols[3].contents[0].contents[0])
-                data['document'].append(cols[3].contents[1].contents[0])
-                data['docurl'].append(
-                    "http://www3.hkexnews.hk" + cols[3].contents[1].attrs["href"])
+                    newsjson = json.loads(r.text)
+
+                    for news in newsjson["newsInfoLst"]:
+                        for stock in news["stock"]:
+                            data['docID'].append(news["newsId"])
+                            data['time'].append(news["relTime"])
+                            data['stockcode'].append(stock["sc"])
+                            data['stockname'].append(stock["sn"])
+                            data['headline'].append(news["lTxt"])
+                            data['document'].append(news["title"])
+                            data['docurl'].append(
+                                "https://www1.hkexnews.hk" + news["webPath"])
 
         newsData = pd.DataFrame(data)
         newsData = newsData[['docID', 'time', 'stockcode',
                              'stockname', 'headline', 'document', 'docurl']]
-
-        # duplicate row if more than one code
-        newsDataDuplicate = newsData[newsData['stockcode'].str.len() > 5]
-        for index, row in newsDataDuplicate.iterrows():
-            stockcodes = re.findall('.....', row['stockcode'])
-            for stockno in stockcodes:
-                newsData = newsData.append({'docID': row['docID'], 'time': row['time'], 'stockcode': stockno,
-                                            'stockname': row['stockname'],
-                                            'headline': row['headline'], 'document': row['document'],
-                                            'docurl': row['docurl']}, ignore_index=True)
 
         # sortdata
         newsData = newsData.sort_values(['docID'], ascending=True)
@@ -178,14 +181,18 @@ def exScrape():
                 newsData['docID'].iloc[-1])}, Query().chatID == user['chatID'])
 
     except (IndexError, ValueError):
-        subscribeList = db.search(Query().subscribe == True)
-        for user in subscribeList:
-            messagelist.append(
-                [user['chatID'], "Error, will try again later."])
+        # subscribeList = db.search(Query().subscribe == True)
+        # for user in subscribeList:
+        Config = configparser.ConfigParser()
+        Config.read("config.ini")
+        admin_id = Config.get('Telegram', 'Admin')
+        messagelist.append(
+            [admin_id, "Error, will try again later."])
 
     return messagelist
 
 
 if __name__ == '__main__':
+    initialise()
     messagelist = exScrape()
     print(messagelist)

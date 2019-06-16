@@ -8,6 +8,7 @@ import re
 import pandas as pd
 import logging
 import pytz
+import json
 
 
 def initialise():
@@ -104,55 +105,56 @@ def exScrapeResults():
         'docurl': []
     }
     urls = [
-        'http://www3.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_SEVEN.HTM',
-        'http://www3.hkexnews.hk/listedco/listconews/gemindex/GEM_LISTEDCO_DATETIME_SEVEN.HTM']
+        'https://www1.hkexnews.hk/ncms/json/eds/lcisehk7relsde_1.json',
+        'https://www1.hkexnews.hk/ncms/json/eds/lcigem7relsde_1.json']
     # urls = [
     # 'http://www.hkexnews.hk/listedco/listconews/mainindex/SEHK_LISTEDCO_DATETIME_SEVEN.HTM',
     # 'http://www.hkexnews.hk/listedco/listconews/gemindex/GEM_LISTEDCO_DATETIME_SEVEN.HTM'] #debug
-    # load html
-
+    # load json
     for url in urls:
         r = cached_sess.get(url)
         r.encoding = 'utf-8'
 
-        html = r.text
-        soup = BeautifulSoup(html, "lxml")
+        newsjson = json.loads(r.text)
 
-        currTime = re.search(r'Current Date Time: ([0-9]*)', html).group(1)
+        maxNumOfFile = newsjson["maxNumOfFile"]
+
+        currTime = newsjson["genDate"]
         logger.info("Updated: " + currTime)
 
-        comments = soup.find_all(text=lambda text: isinstance(text, Comment))
-        rows = soup.find_all('tr', {'class': re.compile('row*')})
+        for news in newsjson["newsInfoLst"]:
+            for stock in news["stock"]:
+                data['docID'].append(news["newsId"])
+                data['time'].append(news["relTime"])
+                data['stockcode'].append(stock["sc"])
+                data['stockname'].append(stock["sn"])
+                data['headline'].append(news["lTxt"])
+                data['document'].append(news["title"])
+                data['docurl'].append(
+                    "https://www1.hkexnews.hk" + news["webPath"])
 
-        for comment in comments:
-            e = re.match(r'([0-9]*)', comment.string).group(1)
-            if len(e) > 1:
-                data['docID'].append(int(e))
+        if maxNumOfFile > 1:
+            for i in range(2, maxNumOfFile):
+                r = cached_sess.get(url.replace(
+                    "_1.json", "_" + str(i) + ".json"))
+                r.encoding = 'utf-8'
 
-        for row in rows:
-            cols = row.find_all('td')
-            data['time'].append(cols[0].get_text())
-            data['stockcode'].append(cols[1].get_text())
-            data['stockname'].append(cols[2].get_text())
-            data['headline'].append(cols[3].contents[0].contents[0])
-            data['document'].append(cols[3].contents[1].contents[0])
-            data['docurl'].append(
-                "http://www3.hkexnews.hk" + cols[3].contents[1].attrs["href"])
+                newsjson = json.loads(r.text)
+
+                for news in newsjson["newsInfoLst"]:
+                    for stock in news["stock"]:
+                        data['docID'].append(news["newsId"])
+                        data['time'].append(news["relTime"])
+                        data['stockcode'].append(stock["sc"])
+                        data['stockname'].append(stock["sn"])
+                        data['headline'].append(news["lTxt"])
+                        data['document'].append(news["title"])
+                        data['docurl'].append(
+                            "https://www1.hkexnews.hk" + news["webPath"])
 
     newsData = pd.DataFrame(data)
     newsData = newsData[['docID', 'time', 'stockcode',
                          'stockname', 'headline', 'document', 'docurl']]
-
-    # duplicate row if more than one code
-    newsDataDuplicate = newsData[newsData['stockcode'].str.len() > 5]
-    for index, row in newsDataDuplicate.iterrows():
-        stockcodes = re.findall('.....', row['stockcode'])
-        for stockno in stockcodes:
-            newsData = newsData.append({'docID': row['docID'],
-                                        'time': row['time'], 'stockcode': stockno,
-                                        'stockname': row['stockname'],
-                                        'headline': row['headline'], 'document': row['document'],
-                                        'docurl': row['docurl']}, ignore_index=True)
 
     # sortdata
     newsData = newsData.sort_values(['docID'], ascending=True)
@@ -195,16 +197,17 @@ def getBoardMeeting():
 
         for row in rows[2:]:
             cols = row.find_all('td')
-            # fix date range error
-            datestring = cols[0].get_text()
-            datestring = re.sub(r"[0-9][0-9]-", "", datestring)
-            data['BM_Date'].append(datestring)
+            if "RES" in cols[4].get_text():
+                # fix date range error
+                datestring = cols[0].get_text()
+                datestring = re.sub(r"[0-9][0-9]-", "", datestring)
+                data['BM_Date'].append(datestring)
 
-            data['stockname'].append(cols[2].get_text())
-            code = re.sub("[^0-9]", "", cols[3].get_text())
-            data['stockcode'].append(code.zfill(5))
-            data['purpose'].append(cols[4].get_text())
-            data['period'].append(cols[5].get_text())
+                data['stockname'].append(cols[2].get_text())
+                code = re.sub("[^0-9]", "", cols[3].get_text())
+                data['stockcode'].append(code.zfill(5))
+                data['purpose'].append(cols[4].get_text())
+                data['period'].append(cols[5].get_text())
 
     newsData = pd.DataFrame(data)
     newsData = newsData[['BM_Date', 'stockname',
@@ -228,4 +231,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    initialise()
+    getBoardMeeting()
