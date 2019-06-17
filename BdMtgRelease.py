@@ -14,6 +14,7 @@ import json
 def initialise():
     # set HTML cache
     sess = requests.session()
+    sess.verify = False
     global cached_sess
     cached_sess = CacheControl(sess)
     # set up DB

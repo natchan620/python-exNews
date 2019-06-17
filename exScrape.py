@@ -87,15 +87,16 @@ def exScrape():
             logger.info("Updated: " + currTime)
 
             for news in newsjson["newsInfoLst"]:
-                for stock in news["stock"]:
-                    data['docID'].append(news["newsId"])
-                    data['time'].append(news["relTime"])
-                    data['stockcode'].append(stock["sc"])
-                    data['stockname'].append(stock["sn"])
-                    data['headline'].append(news["lTxt"])
-                    data['document'].append(news["title"])
-                    data['docurl'].append(
-                        "https://www1.hkexnews.hk" + news["webPath"])
+                if news["t1Code"] != "51500":
+                    for stock in news["stock"]:
+                        data['docID'].append(news["newsId"])
+                        data['time'].append(news["relTime"])
+                        data['stockcode'].append(stock["sc"])
+                        data['stockname'].append(stock["sn"])
+                        data['headline'].append(news["lTxt"])
+                        data['document'].append(news["title"])
+                        data['docurl'].append(
+                            "https://www1.hkexnews.hk" + news["webPath"])
 
             if maxNumOfFile > 1:
                 for i in range(2, maxNumOfFile):
@@ -106,15 +107,16 @@ def exScrape():
                     newsjson = json.loads(r.text)
 
                     for news in newsjson["newsInfoLst"]:
-                        for stock in news["stock"]:
-                            data['docID'].append(news["newsId"])
-                            data['time'].append(news["relTime"])
-                            data['stockcode'].append(stock["sc"])
-                            data['stockname'].append(stock["sn"])
-                            data['headline'].append(news["lTxt"])
-                            data['document'].append(news["title"])
-                            data['docurl'].append(
-                                "https://www1.hkexnews.hk" + news["webPath"])
+                        if news["t1Code"] != "51500":
+                            for stock in news["stock"]:
+                                data['docID'].append(news["newsId"])
+                                data['time'].append(news["relTime"])
+                                data['stockcode'].append(stock["sc"])
+                                data['stockname'].append(stock["sn"])
+                                data['headline'].append(news["lTxt"])
+                                data['document'].append(news["title"])
+                                data['docurl'].append(
+                                    "https://www1.hkexnews.hk" + news["webPath"])
 
         newsData = pd.DataFrame(data)
         newsData = newsData[['docID', 'time', 'stockcode',

@@ -13,6 +13,7 @@ import json
 def initialise():
     # set HTML cache
     sess = requests.session()
+    sess.verify = False
     global cached_sess
     cached_sess = CacheControl(sess)
     # set up DB
@@ -40,8 +41,8 @@ def BoardMeeting():
     }
     messagelist = []
     urls = [
-        'http://www.hkexnews.hk/reports/bmn/ebmn.htm',
-        'http://www.hkgem.com/prices/diaries/diaries2/ebmngem.htm']
+        'https://www.hkexnews.hk/reports/bmn/ebmn.htm',
+        'https://www.hkgem.com/prices/diaries/diaries2/ebmngem.htm']
 
     # load html
 
@@ -106,3 +107,8 @@ def BoardMeeting():
     #         messagelist.append([user['chatID'], "Get meeting dates error, will try again later."])
 
     return messagelist
+
+
+if __name__ == '__main__':
+    initialise()
+    BoardMeeting()
