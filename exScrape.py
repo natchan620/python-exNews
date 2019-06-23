@@ -27,29 +27,6 @@ def initialise():
     TeamDF = pd.read_excel(open('files/listingone.xls', 'rb'), sheet_name=0)
     TeamDF.columns = ['code', 'EName', 'CName', 'team']
 
-
-def addUser(chatIDno, teamIDno):
-    if len(db.search((Query().chatID == chatIDno) & (Query().teamID == teamIDno))) > 0:
-        db.update({'subscribe': True}, ((Query().chatID == chatIDno)
-                                        & (Query().teamID == teamIDno)))
-    else:
-        lastDocID = 2809759
-        if len(db) > 0:
-            lastDocID = db.all()[0]['lastDocID']
-        db.insert({'chatID': chatIDno,
-                   'teamID': teamIDno,
-                   'subscribe': True,
-                   'lastDocID': lastDocID})
-
-
-def removeUser(chatIDno):
-    if len(db.search(Query().chatID == chatIDno)) > 0:
-        db.update({'subscribe': False}, Query().chatID == chatIDno)
-        return True
-    else:
-        return False
-
-
 def exScrape():
     # Enable logging
     logging.basicConfig(filename='files/logfile.log',
