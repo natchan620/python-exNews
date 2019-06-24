@@ -1,9 +1,10 @@
 # coding:utf-8
-from telegram import ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, RegexHandler,
                           ConversationHandler, CallbackQueryHandler, Job)
 from tinydb import TinyDB, Query
 from emoji import emojize
+import telegram
 import pandas as pd
 import logging
 import configparser
@@ -14,7 +15,7 @@ import BdMtgRelease
 import teamUpdate
 
 # change log
-change_log = """ExNews Push build 20190616
+change_log = """ExNews Push build 20190624
 Fuction: 
 - Update ex news website every 90 seconds
 - Check results release 11:10 PM every day
@@ -41,6 +42,7 @@ Change log:
 - 20190108: Added book closure date check
 - 20190321: Disabled closure date check
 - 20190616: Fixed to read after news website revamp
+- 20190624: Added interactive menu function
 """
 
 # Enable logging
@@ -51,8 +53,7 @@ logger=logging.getLogger(__name__)
 # telegram
 MENU, ADMIN_MENU, REPEAT_MSG, CONFIRM=range(4)
 
-menu_keyboard=[['Cancel Subscriptions', 'View Subscriptions',
-    'Statistics'], ['About this bot', 'Subscribe to team']]
+menu_keyboard=[['About this bot', 'Feedback/Contact', 'Statistics'], ['Cancel Subscriptions', 'View Subscriptions', 'Subscribe to team']]
 markup=ReplyKeyboardMarkup(
     menu_keyboard, one_time_keyboard = False, resize_keyboard = True)
 
@@ -84,31 +85,34 @@ def add_subs(bot, update):
         if len(button_row) >= 5:  # 5 button per row
             button_array.append(button_row)
             button_row=[]
-
+    button_array.append(button_row)
     reply_markup=InlineKeyboardMarkup(button_array)
 
     update.message.reply_text(
         'Please choose the subscription you want to add:', reply_markup = reply_markup)
+    return ConversationHandler.END    
 
 def cancel_subs(bot, update):
     db=TinyDB('files/db.json')
     if len(db.search((Query().chatID == update.message.chat_id) & (Query().subscribe == True))) > 0:
         subscribedList=db.search(
             (Query().chatID == update.message.chat_id) & (Query().subscribe == True))
-        button_array=[]
+        button_array=[[InlineKeyboardButton("Cancel all", callback_data = 'cancel_all')]]
+        button_row=[]
         for subsciption in subscribedList:
-            button_array.append(InlineKeyboardButton(
+            button_row.append(InlineKeyboardButton(
                 "Team " + str(subsciption['teamID']), callback_data="cancel_" + str(subsciption['teamID'])))
-
-        keyboard= [[InlineKeyboardButton("Cancel all", callback_data = 'cancel_all')],
-                button_array]
-
-        reply_markup = InlineKeyboardMarkup(keyboard)
+            if len(button_row) >= 3:  # 3 button per row
+                button_array.append(button_row)
+                button_row=[]
+        button_array.append(button_row)
+        reply_markup = InlineKeyboardMarkup(button_array)
 
         update.message.reply_text('Please choose the subscription you want to cancel:', reply_markup=reply_markup)
-
+        return ConversationHandler.END
     else:
         update.message.reply_text("No active subscription found.")
+        return ConversationHandler.END
 
 
 def subs_callback(bot, update):
@@ -119,26 +123,28 @@ def subs_callback(bot, update):
         bot.edit_message_text(text="Selected: Cancel all team subscriptions",
                           chat_id=query.message.chat_id,
                           message_id=query.message.message_id)
-        if len(db.search(Query().chatID == update.message.chat_id)) > 0:
-            db.update({'subscribe': False}, Query().chatID == update.message.chat_id)
+        if len(db.search(Query().chatID == query.message.chat_id)) > 0:
+            db.update({'subscribe': False}, Query().chatID == query.message.chat_id)
             bot.sendMessage(
                 chat_id=query.message.chat_id,
                 text=emojize("Subscription for all teams cancelled successfully.", use_aliases=True),
                 parse_mode='HTML',
-                disable_web_page_preview=True)
-
-    elif query_data[0] == "cancel":
+                disable_web_page_preview=True,
+                reply_markup=ReplyKeyboardRemove())
+            
+    elif query_data[0] == "cancel": 
         bot.edit_message_text(text="Selected: Cancel Team {} subscription".format(query_data[1]),
                           chat_id=query.message.chat_id,
                           message_id=query.message.message_id)
-        if len(db.search(Query().chatID == update.message.chat_id) & (Query().teamID == query_data[1])) > 0:
-            db.update({'subscribe': False}, (Query().chatID == update.message.chat_id) & (Query().teamID == int(query[1])))           
+        if len(db.search((Query().chatID == query.message.chat_id) & (Query().teamID == int(query_data[1])))) > 0:
+            db.update({'subscribe': False}, (Query().chatID == query.message.chat_id) & (Query().teamID == int(query_data[1])))           
             bot.sendMessage(
                 chat_id=query.message.chat_id,
                 text=emojize("Subscription for Team: " + str(query_data[1]) + " cancelled.", use_aliases=True),
                 parse_mode='HTML',
-                disable_web_page_preview=True)
-
+                disable_web_page_preview=True,
+                reply_markup=ReplyKeyboardRemove())
+            
     elif query_data[0] == "add":
         bot.edit_message_text(text="Selected: Add Team {} subscription".format(query_data[1]),
                           chat_id=query.message.chat_id,
@@ -148,7 +154,10 @@ def subs_callback(bot, update):
                 chat_id=query.message.chat_id,
                 text=emojize("Subscription for Team: " + str(query_data[1]) + " set successfully.", use_aliases=True),
                 parse_mode='HTML',
-                disable_web_page_preview=True)
+                disable_web_page_preview=True,
+                reply_markup=ReplyKeyboardRemove())
+        
+    
 
 
 def view_subs(bot, update):
@@ -158,10 +167,11 @@ def view_subs(bot, update):
         message = "Your active subscription(s):"
         for subsciption in subscribedList:
             message = message + "\n" + "<b>Team {}</b>".format(subsciption['teamID'])
-        update.message.reply_text(message)
+        update.message.reply_text(message, parse_mode='HTML', reply_markup=ReplyKeyboardRemove())
     else:
-        update.message.reply_text("No active subscription found.")
+        update.message.reply_text("No active subscription found.", reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
+
 
 def user_stats(bot, update):
     db = TinyDB('files/db.json')
@@ -177,11 +187,17 @@ def user_stats(bot, update):
 
     update.message.reply_text("Thank you for your support!"
                             "\n" + "Number of active team subscriptions: " + str(sub_no) +
-                            "\n" + "Number of active unique users/groups: " + str(len(uniqueuserlist)))
+                            "\n" + "Number of active unique users/groups: " + str(len(uniqueuserlist)), reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
+                            
 def about(bot, update):
-    update.message.reply_text(change_log)
+    update.message.reply_text(change_log, reply_markup=ReplyKeyboardRemove())
+    return ConversationHandler.END
+
+
+def contact(bot, update):
+    update.message.reply_text("For any feedbacks, feature requests or error reports, please contact @babuluboy. Thanks!", reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
 # jobs
@@ -267,21 +283,40 @@ def admin(bot, update):
 def admin_getinfo(bot, update):
     db = TinyDB('files/db.json')
     subscribeList = db.all()
+    data = {
+        'chatID': [],
+        'teamID': [],
+        'subscribe': [],
+        'Name': [],
+        'Username': [],
+        'Title': []
+    }
     for user in subscribeList:
         TelegramChat = bot.getChat(user['chatID'])
-        push_msg = "<b>" + str(user['chatID']) + \
-                "\n</b>Team " + str(user['teamID']) + ": " + str(user['subscribe']) + \
-                "\nName: " + str(TelegramChat.first_name) + " " + str(TelegramChat.last_name) + \
-                "\nUsername: " + str(TelegramChat.username) + \
-                "\nTitle: " + str(TelegramChat.title)
-        update.message.reply_text(push_msg)
+        data['chatID'].append(user['chatID'])
+        data['teamID'].append(user["teamID"])
+        data['subscribe'].append(str(user["subscribe"]))
+        data['Name'].append(str(TelegramChat.first_name) + " " + str(TelegramChat.last_name))
+        data['Username'].append(str(TelegramChat.username))
+        data['Title'].append(str(TelegramChat.title))
+    userData = pd.DataFrame(data)
+    userData.to_excel('files/userlist.xlsx')
+    bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.UPLOAD_DOCUMENT)
+    bot.send_document(chat_id=update.message.chat_id, document=open('files/userlist.xlsx', 'rb'))
+        # push_msg = "<b>" + str(user['chatID']) + \
+        #         "\n</b>Team " + str(user['teamID']) + ": " + str(user['subscribe']) + \
+        #         "\nName: " + str(TelegramChat.first_name) + " " + str(TelegramChat.last_name) + \
+        #         "\nUsername: " + str(TelegramChat.username) + \
+        #         "\nTitle: " + str(TelegramChat.title)
+        # update.message.reply_text(push_msg, parse_mode='HTML')
+    update.message.reply_text("Done.", reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
 
 def admin_pa(bot, update):
     update.message.reply_text("Okay, please type in the public announcment:")
 
-    return CONFIRM
+    return REPEAT_MSG
 
 
 def admin_confirm_pa(bot, update, user_data):
@@ -310,7 +345,8 @@ def admin_sendout_pa(bot, update, user_data):
                 text=user_data['message'],
                 disable_web_page_preview=False)
 
-    update.message.reply_text("Public announcment sent.")
+    update.message.reply_text("Public announcment sent.",
+                    reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
 
@@ -318,7 +354,8 @@ def cancel(bot, update, user_data):
     if 'message' in user_data:
         del user_data['message']
 
-    update.message.reply_text("Operation cancelled.")
+    update.message.reply_text("Operation cancelled.",
+                    reply_markup=ReplyKeyboardRemove())
 
     user_data.clear()
     return ConversationHandler.END
@@ -369,6 +406,8 @@ def main():
                                     add_subs),
                    RegexHandler('^About this bot$',
                                     about),
+                   RegexHandler('^Feedback/Contact$',
+                                    contact),
                    RegexHandler('^Statistics$',
                                     user_stats),
                    RegexHandler('^View Subscriptions$',

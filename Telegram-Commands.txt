@@ -1,8 +1,4 @@
-start - /start <teamID> add team subscription (eg: /start 10)
-stop - stop ALL team subscription
-add - /add <teamID> add one more team subscription (eg: /add 20)
-about - About this bot
-help - See instructions
+start - Show up the main menu
 
 ===========================
 
@@ -13,8 +9,4 @@ Function:
 - Update team Excel every night
 
 Usage: 
-- Start subscription: /start <teamID> (eg: /start 10)
-- Add one more team subscription: /add <teamID> (eg: /add 20)
-- Stop all team subscription: /stop
-
-Enjoy!
+- /start to show up the main menu
