@@ -7,8 +7,8 @@ import re
 import pandas as pd
 import logging
 from pathlib import Path
-import BdMtgCal
-import BookCloseCal
+# import BdMtgCal
+# import BookCloseCal
 import datetime
 import configparser
 import json
@@ -26,6 +26,7 @@ def initialise():
     global TeamDF
     TeamDF = pd.read_excel(open('files/listingone.xls', 'rb'), sheet_name=0)
     TeamDF.columns = ['code', 'EName', 'CName', 'team']
+
 
 def exScrape():
     # Enable logging

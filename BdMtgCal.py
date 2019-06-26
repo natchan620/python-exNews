@@ -3,14 +3,12 @@ from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from io import StringIO
-# import datefinder
 import pandas as pd
-# from pandas.tseries.offsets import CustomBusinessDay
 import datetime
 import requests
 import numpy as np
 import re
-import dateparser
+from dateutil.parser import *
 
 
 def convert_pdf_to_txt(path):
@@ -45,7 +43,7 @@ def calc_noticeperiod(time, filename):
     date_list = []
     for match in matches:
         print(match)
-        date_list.append(dateparser.parse(match[0]))
+        date_list.append(parse(match[0]))
     bm_date = max(date_list)
     # now_date = datetime.datetime.now(
     #    pytz.timezone('Asia/Hong_Kong')).replace(tzinfo=None)
@@ -74,7 +72,7 @@ def downloadPDF(URL):
 
 if __name__ == '__main__':
     downloadPDF(
-        "http://www3.hkexnews.hk/listedco/listconews/SEHK/2018/1031/LTN20181031582.pdf")
+        "https://www1.hkexnews.hk/listedco/listconews/sehk/2019/0618/ltn20190618939.pdf")
     bm_date, num_bdays = calc_noticeperiod(
-        "31/10/2018 17:43", "files/TempAnnt.pdf")
+        "18/06/2019 21:11", "files/TempAnnt.pdf")
     print(str(bm_date) + " " + str(num_bdays))

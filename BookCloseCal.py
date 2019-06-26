@@ -10,7 +10,7 @@ import datetime
 import requests
 import numpy as np
 import re
-import dateparser
+from dateutil.parser import *
 
 
 def convert_pdf_to_txt(path):
@@ -22,7 +22,7 @@ def convert_pdf_to_txt(path):
     fp = open(path, 'rb')
     interpreter = PDFPageInterpreter(rsrcmgr, device)
     password = ""
-    maxpages = 10
+    maxpages = 100
     caching = True
     pagenos = set()
     for page in PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password, caching=caching, check_extractable=True):
@@ -48,7 +48,7 @@ def calc_noticeperiod(time, filename):
     date_list = []
     for match in matches:
         print(match)
-        date_list.append(dateparser.parse(match[0]))
+        date_list.append(parse(match[0]))
 
     bc_start_date = min(date_list)
     bc_end_date = max(date_list)
@@ -80,8 +80,8 @@ def downloadPDF(URL):
 
 if __name__ == '__main__':
     downloadPDF(
-        "http://www3.hkexnews.hk/listedco/listconews/SEHK/2019/0321/LTN20190321577.pdf")
+        "https://www1.hkexnews.hk/listedco/listconews/gem/2019/0624/gln20190624165.pdf")
     bc_start_date, bc_end_date, num_bdays = calc_noticeperiod(
-        "21/03/2019 18:24", "files/TempAnnt.pdf")
+        "24/06/2019 22:57", "files/TempAnnt.pdf")
     print(str(bc_start_date) + " to " + str(bc_end_date) +
           " (" + str(num_bdays) + " days notice)")
