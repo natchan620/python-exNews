@@ -43,8 +43,6 @@ Change log:
 - 20190321: Disabled closure date check
 - 20190616: Fixed to read after news website revamp
 - 20190624: Added interactive menu function
-- 20190717: Try to omit testing announcments (with ID >= 9000000)
-- 20190801: Seperate filter for Main and GEM companies
 """
 
 # Enable logging
