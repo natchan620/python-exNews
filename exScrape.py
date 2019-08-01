@@ -37,6 +37,7 @@ def exScrape():
     # initialise
     data = {
         'docID': [],
+        'board': [],
         'time': [],
         'stockcode': [],
         'stockname': [],
@@ -65,9 +66,15 @@ def exScrape():
             logger.info("Updated: " + currTime)
 
             for news in newsjson["newsInfoLst"]:
-                if news["t1Code"] != "51500":
+                # remove testing announcment ID
+                if news["t1Code"] != "51500" and news["newsId"] < 9000000:
                     for stock in news["stock"]:
                         data['docID'].append(news["newsId"])
+                        # classify MB and GEM
+                        if int(stock["sc"]) >= 8000 and int(stock["sc"]) <= 8999:
+                            data['board'].append("GEM")
+                        else:
+                            data['board'].append("MB")
                         data['time'].append(news["relTime"])
                         data['stockcode'].append(stock["sc"])
                         data['stockname'].append(stock["sn"])
@@ -85,9 +92,15 @@ def exScrape():
                     newsjson = json.loads(r.text)
 
                     for news in newsjson["newsInfoLst"]:
-                        if news["t1Code"] != "51500":
+                        # remove testing announcment ID
+                        if news["t1Code"] != "51500" and news["newsId"] < 9000000:
                             for stock in news["stock"]:
                                 data['docID'].append(news["newsId"])
+                                # classify MB and GEM
+                                if int(stock["sc"]) >= 8000 and int(stock["sc"]) <= 8999:
+                                    data['board'].append("GEM")
+                                else:
+                                    data['board'].append("MB")
                                 data['time'].append(news["relTime"])
                                 data['stockcode'].append(stock["sc"])
                                 data['stockname'].append(stock["sn"])
@@ -97,7 +110,7 @@ def exScrape():
                                     "https://www1.hkexnews.hk" + news["webPath"])
 
         newsData = pd.DataFrame(data)
-        newsData = newsData[['docID', 'time', 'stockcode',
+        newsData = newsData[['docID', 'board', 'time', 'stockcode',
                              'stockname', 'headline', 'document', 'docurl']]
 
         # sortdata
@@ -111,8 +124,9 @@ def exScrape():
             for index, row in df.iterrows():
                 stocklist.append(str(row['code']).zfill(5))
 
-            newsDataSorted = newsData[(newsData["docID"] > user['lastDocID']) & (
-                newsData["stockcode"].isin(stocklist))]
+            newsDataSorted = newsData[((newsData["docID"] > user['MB_lastDocID']) & (
+                newsData["stockcode"].isin(stocklist)) & (newsData['board'] == "MB")) | ((newsData["docID"] > user['GEM_lastDocID']) & (
+                    newsData["stockcode"].isin(stocklist)) & (newsData['board'] == "GEM"))]
             for index, row in newsDataSorted.iterrows():
                 messagelist.append([user['chatID'], ":newspaper: Team " + str(user['teamID']) + " " + row['time'] + " #" + str(row['docID']) + "\n<b>" + row['stockcode'] + " " + row['stockname'] +
                                     "</b>\n" + row['headline'] + "\n<a href=\"" + row['docurl'] + "\">" + row['document'] + "</a>"])
@@ -156,9 +170,12 @@ def exScrape():
 
                     except:
                         pass
+
             # update next minID to list & save session
-            db.update({'lastDocID': int(
-                newsData['docID'].iloc[-1])}, Query().chatID == user['chatID'])
+            db.update({'MB_lastDocID': int(
+                newsData[(newsData["board"] == "MB")]['docID'].iloc[-1])}, Query().chatID == user['chatID'])
+            db.update({'GEM_lastDocID': int(
+                newsData[(newsData["board"] == "GEM")]['docID'].iloc[-1])}, Query().chatID == user['chatID'])
 
     except (IndexError, ValueError):
         # subscribeList = db.search(Query().subscribe == True)
