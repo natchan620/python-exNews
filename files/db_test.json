@@ -1,1 +1,11 @@
-{"_default":{"1":{"subscribe":true,"teamID":21,"chatID":10305940,"lastDocID":3432788}}}
+{
+    "_default": {
+        "1": {
+            "subscribe": true,
+            "teamID": 21,
+            "chatID": 10305940,
+            "MB_lastDocID": 3432788,
+            "GEM_lastDocID": 3432788
+        }
+    }
+}
