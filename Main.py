@@ -372,11 +372,12 @@ def addUser(chatIDno, teamIDno):
     else:
         lastDocID = 2809759
         if len(db) > 0:
-            lastDocID = db.all()[0]['lastDocID']
+            lastDocID = db.all()[0]['MB_lastDocID']
         db.insert({'chatID': chatIDno,
                    'teamID': teamIDno,
                    'subscribe': True,
-                   'lastDocID': lastDocID})
+                   'MB_lastDocID': lastDocID,
+                   'GEM_lastDocID': lastDocID})
 
 
 def error(bot, update, error):
