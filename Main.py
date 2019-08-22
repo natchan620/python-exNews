@@ -45,6 +45,8 @@ Change log:
 - 20190624: Added interactive menu function
 - 20190717: Try to omit testing announcments (with ID >= 9000000)
 - 20190801: Seperate filter for Main and GEM companies
+- 20190822: Restored date of board meeting check
+- 20190822: Try to check board meeting again at around 8am daily
 """
 
 # Enable logging
@@ -477,6 +479,10 @@ def main():
     checkresults_time = datetime.datetime.strptime(
         Config.get('Settings', 'CheckResultsTime'), '%H:%M').time()
     j.run_daily(checkresultsJob, checkresults_time)
+
+    checkresults_time2 = datetime.datetime.strptime(
+        Config.get('Settings', 'CheckResultsTime2'), '%H:%M').time()
+    j.run_daily(checkresultsJob, checkresults_time2)
     # j.run_once(checkresultsJob, 0)  # debug use
 
     # Start the Bot

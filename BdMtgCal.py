@@ -72,7 +72,7 @@ def downloadPDF(URL):
 
 if __name__ == '__main__':
     downloadPDF(
-        "https://www1.hkexnews.hk/listedco/listconews/sehk/2019/0618/ltn20190618939.pdf")
+        "https://www1.hkexnews.hk/listedco/listconews/sehk/2019/0822/ltn20190822381.pdf")
     bm_date, num_bdays = calc_noticeperiod(
-        "18/06/2019 21:11", "files/TempAnnt.pdf")
+        "22/08/2019 18:46", "files/TempAnnt.pdf")
     print(str(bm_date) + " " + str(num_bdays))
