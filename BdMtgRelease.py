@@ -2,7 +2,7 @@
 from bs4 import BeautifulSoup, Comment
 from cachecontrol import CacheControl
 from tinydb import TinyDB, Query
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 import re
 import pandas as pd
@@ -26,14 +26,17 @@ def initialise():
     TeamDF.columns = ['code', 'EName', 'CName', 'team']
 
 
-def BoardMeetingCheck():
+def BoardMeetingCheck(getPrevious):
     messagelist = []
-    newsData = getBoardMeeting()
+    newsData = getBoardMeeting(getPrevious)
     ExNewsData = exScrapeResults()
 
     # sort date today / before today
     mytz = pytz.timezone('Asia/Hong_Kong')
-    today = str(datetime.now(mytz).date())
+    if getPrevious:
+        today = str(datetime.now(mytz).date() - timedelta(days=1))
+    else:
+        today = str(datetime.now(mytz).date())
     mask = (newsData['BM_Date'] <= today)
     # mask = (newsData['BM_Date'] <= '2018-02-21') #debug
     newsData = newsData.loc[mask]
@@ -163,7 +166,7 @@ def exScrapeResults():
     return newsData
 
 
-def getBoardMeeting():
+def getBoardMeeting(getPrevious):
     # Enable logging
     logging.basicConfig(filename='files/logfile.log',
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -181,13 +184,24 @@ def getBoardMeeting():
         'http://www.hkexnews.hk/reports/bmn/ebmn.htm',
         'http://www.hkgem.com/prices/diaries/diaries2/ebmngem.htm']
 
+    files = [
+        'files/ebmn.htm',
+        'files/ebmngem.htm']
+
     # load html
 
-    for url in urls:
-        r = cached_sess.get(url)
-        r.encoding = 'utf-8'
+    for x in range(0, len(urls)):
+        if getPrevious:
+            file = open(files[x], "r")
+            html = file.read()
+        else:
+            r = cached_sess.get(urls[x])
+            r.encoding = 'utf-8'
+            html = r.text
+            file = open(files[x], "w")  # open file in binary mode
+            file.writelines(html)
+            file.close()
 
-        html = r.text
         soup = BeautifulSoup(html, "lxml")
 
         currTime = re.search(r'Date : ([0-9/]*)', html).group(1)
@@ -226,11 +240,13 @@ def getBoardMeeting():
 
 def main():
     initialise()
-    msgList = BoardMeetingCheck()
+    msgList = BoardMeetingCheck(True)
     for message in msgList:
         print(message)
 
 
 if __name__ == '__main__':
     initialise()
-    getBoardMeeting()
+    msgList = BoardMeetingCheck(False)
+    for message in msgList:
+        print(message)

@@ -238,7 +238,23 @@ def meeting(bot, job):
             logger.error("Meeting ID#" + str(message[0]) + ": " + str(e))
 
 def checkresultsJob(bot, job):
-    msgList = BdMtgRelease.BoardMeetingCheck()
+    msgList = BdMtgRelease.BoardMeetingCheck(False)
+    for message in msgList:
+        try:
+            bot.sendMessage(
+                chat_id=message[0],
+                text=emojize(message[1], use_aliases=True),
+                parse_mode='HTML',
+                disable_web_page_preview=True)
+            if(is_ascii(message[1])):
+                logger.info("Results check ID#" +
+                            str(message[0]) + ": " + message[1].replace('\n', ''))
+
+        except BaseException as e:
+            logger.error("Results check ID#" + str(message[0]) + ": " + str(e))
+
+def checkresultsJobND(bot, job):
+    msgList = BdMtgRelease.BoardMeetingCheck(True)
     for message in msgList:
         try:
             bot.sendMessage(
@@ -482,7 +498,7 @@ def main():
 
     checkresults_time2 = datetime.datetime.strptime(
         Config.get('Settings', 'CheckResultsTime2'), '%H:%M').time()
-    j.run_daily(checkresultsJob, checkresults_time2)
+    j.run_daily(checkresultsJobND, checkresults_time2)
     # j.run_once(checkresultsJob, 0)  # debug use
 
     # Start the Bot
