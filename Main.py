@@ -47,6 +47,7 @@ Change log:
 - 20190801: Seperate filter for Main and GEM companies
 - 20190822: Restored date of board meeting check
 - 20190822: Try to check board meeting again at around 8am daily
+- 20190828: Fix announcment omitted using new EDS (with ID >= 9000000)
 """
 
 # Enable logging
@@ -206,7 +207,7 @@ def contact(bot, update):
 
 # jobs
 def checknews(bot, job):
-    msgList = exScrape.exScrape()
+    msgList = exScrape.exScrape() + exScrape.exScrapeNew()
     for message in msgList:
         try:
             bot.sendMessage(
@@ -391,11 +392,14 @@ def addUser(chatIDno, teamIDno):
         lastDocID = 2809759
         if len(db) > 0:
             lastDocID = db.all()[0]['MB_lastDocID']
+            lastDocIDNew = db.all()[0]['MB_lastDocIDNew']
         db.insert({'chatID': chatIDno,
                    'teamID': teamIDno,
                    'subscribe': True,
                    'MB_lastDocID': lastDocID,
-                   'GEM_lastDocID': lastDocID})
+                   'GEM_lastDocID': lastDocID,
+                    'MB_lastDocIDNew': lastDocIDNew,
+                   'GEM_lastDocIDNew': lastDocIDNew})
 
 
 def error(bot, update, error):
