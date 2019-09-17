@@ -174,23 +174,27 @@ def exScrape():
                         pass
 
             # update next minID to list & save session
-            db.update({'MB_lastDocID': int(
-                newsData[(newsData["board"] == "MB")]['docID'].iloc[-1])}, Query().chatID == user['chatID'])
-            db.update({'GEM_lastDocID': int(
-                newsData[(newsData["board"] == "GEM")]['docID'].iloc[-1])}, Query().chatID == user['chatID'])
+            if len(newsData[(newsData["board"] == "MB")]) > 0:
+                db.update({'MB_lastDocID': int(
+                    newsData[(newsData["board"] == "MB")]['docID'].iloc[-1])}, Query().chatID == user['chatID'])
+            if len(newsData[(newsData["board"] == "GEM")]) > 0:
+                db.update({'GEM_lastDocID': int(
+                    newsData[(newsData["board"] == "GEM")]['docID'].iloc[-1])}, Query().chatID == user['chatID'])
 
-    except (IndexError, ValueError):
+    except (IndexError, ValueError) as e:
         # subscribeList = db.search(Query().subscribe == True)
         # for user in subscribeList:
         Config = configparser.ConfigParser()
         Config.read("config.ini")
         admin_id = Config.get('Telegram', 'Admin')
         messagelist.append(
-            [admin_id, "Error, will try again later."])
+            [admin_id, "Error:" + str(e)])
 
     return messagelist
 
 # For new EDS (anntID > 9000000)
+
+
 def exScrapeNew():
     # Enable logging
     logging.basicConfig(filename='files/logfile.log',
@@ -335,19 +339,21 @@ def exScrapeNew():
                         pass
 
             # update next minID to list & save session
-            db.update({'MB_lastDocIDNew': int(
-                newsData[(newsData["board"] == "MB")]['docID'].iloc[-1])}, Query().chatID == user['chatID'])
-            db.update({'GEM_lastDocIDNew': int(
-                newsData[(newsData["board"] == "GEM")]['docID'].iloc[-1])}, Query().chatID == user['chatID'])
+            if len(newsData[(newsData["board"] == "MB")]) > 0:
+                db.update({'MB_lastDocIDNew': int(
+                    newsData[(newsData["board"] == "MB")]['docID'].iloc[-1])}, Query().chatID == user['chatID'])
+            if len(newsData[(newsData["board"] == "GEM")]) > 0:
+                db.update({'GEM_lastDocIDNew': int(
+                    newsData[(newsData["board"] == "GEM")]['docID'].iloc[-1])}, Query().chatID == user['chatID'])
 
-    except (IndexError, ValueError):
+    except (IndexError, ValueError) as e:
         # subscribeList = db.search(Query().subscribe == True)
         # for user in subscribeList:
         Config = configparser.ConfigParser()
         Config.read("config.ini")
         admin_id = Config.get('Telegram', 'Admin')
         messagelist.append(
-            [admin_id, "Error, will try again later."])
+            [admin_id, "Error:" + str(e)])
 
     return messagelist
 
