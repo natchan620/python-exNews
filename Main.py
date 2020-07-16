@@ -48,6 +48,7 @@ Change log:
 - 20190822: Restored date of board meeting check
 - 20190822: Try to check board meeting again at around 8am daily
 - 20190828: Fix announcment omitted using new EDS (with ID >= 9000000)
+- 20200716: Add back command function
 """
 
 # Enable logging
@@ -161,8 +162,39 @@ def subs_callback(bot, update):
                 parse_mode='HTML',
                 disable_web_page_preview=True,
                 reply_markup=ReplyKeyboardRemove())
-        
-    
+
+# Traditional Command 
+def CommandAdd(bot, update, args):
+    Config = configparser.ConfigParser()
+    Config.read("config.ini")
+    due = int(Config.get('Settings', 'Due'))
+
+    try:
+        teamID = int(args[0])
+        if teamID < 1 | teamID > 99:
+            update.message.reply_text('Please check your teamID')
+            return
+        addUser(update.message.chat_id, teamID)
+        update.message.reply_text("exNews subscription for Team: " + str(teamID) + " set.")
+
+    except (IndexError, ValueError):
+        update.message.reply_text('Usage: /add <teamID> (eg: /add 30)')
+
+def CommandRemove(bot, update, args):
+    db = TinyDB('files/db.json')
+    try:
+        if len(db.search((Query().chatID == update.message.chat_id) & (Query().teamID == int(args[0])))) > 0:
+            db.update({'subscribe': False}, (Query().chatID == update.message.chat_id) & (Query().teamID == int(args[0])))           
+            bot.sendMessage(
+                chat_id=update.message.chat_id,
+                text=emojize("Subscription for Team: " + str(args[0]) + " cancelled.", use_aliases=True),
+                parse_mode='HTML',
+                disable_web_page_preview=True)
+        else:
+            update.message.reply_text('You have not been subscribing for team ' + str(args[0]))
+
+    except (IndexError, ValueError):
+        update.message.reply_text('Usage: /remove <teamID> (eg: /remove 30)')
 
 
 def view_subs(bot, update):
@@ -421,6 +453,10 @@ def main():
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
+    # Add traditional command
+    dp.add_handler(CommandHandler("add", CommandAdd, pass_args=True))
+    dp.add_handler(CommandHandler("remove", CommandRemove, pass_args=True))
+
     # Add conversation handler and callback
     dp.add_handler(CallbackQueryHandler(subs_callback))
     conv_handler = ConversationHandler(
