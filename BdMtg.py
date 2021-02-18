@@ -42,12 +42,17 @@ def BoardMeeting():
     messagelist = []
     urls = [
         'https://www.hkexnews.hk/reports/bmn/ebmn.htm',
-        'https://www.hkgem.com/prices/diaries/diaries2/ebmngem.htm']
+        'http://www.hkex-is.hk/wwwroot/link/ebmngem.htm']
 
     # load html
 
     for url in urls:
-        r = cached_sess.get(url)
+        # proxies = {
+        # 'http': 'http://127.0.0.1:8888',
+        # 'https': 'http://127.0.0.1:8888',
+        # }
+
+        r = requests.get(url)
         r.encoding = 'utf-8'
 
         html = r.text
