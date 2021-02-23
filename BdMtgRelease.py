@@ -182,7 +182,7 @@ def getBoardMeeting(getPrevious):
 
     urls = [
         'http://www.hkexnews.hk/reports/bmn/ebmn.htm',
-        'http://www.hkgem.com/prices/diaries/diaries2/ebmngem.htm']
+        'http://www.hkex-is.hk/wwwroot/link/ebmngem.htm']
 
     files = [
         'files/ebmn.htm',
