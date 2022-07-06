@@ -2,7 +2,7 @@ python-telegram-bot>=10.1.0
 beautifulsoup4
 requests
 pandas
-lxml==4.1.1
+lxml==4.9.1
 CacheControl
 tinydb
 pdfminer.six
